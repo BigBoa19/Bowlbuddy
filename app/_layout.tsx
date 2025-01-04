@@ -3,6 +3,7 @@ import "../global.css";
 import UserContext from "./context"; import useUserData from './functions/useUserData';
 import { useFonts } from "expo-font";
 import React from "react";
+import { AlertNotificationRoot } from 'react-native-alert-notification';
 
 export default function RootLayout() {
   const userData = useUserData();
@@ -33,12 +34,14 @@ export default function RootLayout() {
   if (!fontsLoaded && !error) return null;
 
   return (
-    <UserContext.Provider value={{ user: userData.user }} >
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
-    </UserContext.Provider>
+    <AlertNotificationRoot>
+      <UserContext.Provider value={{ user: userData.user }} >
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+        </Stack>
+      </UserContext.Provider>
+    </AlertNotificationRoot>
   )
 }

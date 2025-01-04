@@ -1,87 +1,70 @@
-import { View, Text, StyleSheet, SafeAreaView, FlatList, Image } from 'react-native'
-import React, {useEffect, useState} from 'react'
+import { View, Text, SafeAreaView, FlatList, Image, TouchableOpacity } from 'react-native'
+import React from 'react'
 import icons from '@/constants/icons'
 import FormField from '../components/FormField'
+import { questions } from '../functions/fetchDB'
+import UserContext from '../context'
+import { db } from '../../firebaseConfig'
+import { doc, collection, query, onSnapshot } from 'firebase/firestore'
+import { router } from 'expo-router'
 
-
-const DATA = [
-  {
-    id: '1',
-    title: 'First Item',
-  },
-  {
-    id: '2',
-    title: 'Second Item',
-  },
-  {
-    id: '3',
-    title: 'Third Item',
-  },
-  {
-    id: '4',
-    title: 'Fourth Item',
-  },
-  {
-    id: '5',
-    title: 'Fifth Item',
-  },
-  {
-    id: '6',
-    title: 'Sixth Item',
-  },
-  {
-    id: '7',
-    title: 'Seventh Item',
-  },
-  {
-    id: '8',
-    title: 'Eighth Item',
-  },
-  {
-    id: '9',
-    title: 'Ninth Item',
-  },
-  {
-    id: '10',
-    title: 'Tenth Item',
-  },
-];
-
-type ItemProps = {title: string};
-
-const Item = ({title}: ItemProps) => (
+const Item = (props: questions) => (
   <View className='flex-row p-5 bg-primary mt-3 border-2 border-secondary rounded-xl'>
-    <Text className='text-white text-xl font-gBook'>{title}</Text>
+    <Text className='text-white text-xl font-gBook'>{props.answer_sanitized}</Text>
     <View className='flex-1 items-end'>
-      <Image
-          source={icons.leftArrow}
-          resizeMode="contain"
-          tintColor={'text-tertiary'}
-          className='w-6 h-6 rotate-180'
-      />
+      <TouchableOpacity onPress={() => {
+        router.push({
+          pathname: "/SavedQuestion",
+          params: {
+            question: props.question_sanitized,
+            question_sanitized: props.question_sanitized,
+            answer: props.answer_sanitized,
+            answer_sanitized: props.answer_sanitized
+          }
+        })
+      }}>
+        <Image
+            source={icons.leftArrow}
+            resizeMode="contain"
+            tintColor={'text-tertiary'}
+            className='w-6 h-6 rotate-180'
+        />
+      </TouchableOpacity>
+      
     </View>
   </View>
 );
 
-// const useEffect = () => {
-
-// }
-
-
 const Saved = () => {
-  const [query, setQuery]= useState('')
+  const { user } = React.useContext(UserContext);
+  const [questions, setQuestions] = React.useState<any[]>([])
+  const [searchQuery, setQuery]= React.useState('')
 
-  const filterData = (item:any) =>{
-    if(item.title.toLowerCase().includes(query.toLowerCase())){
+  React.useEffect(() => {
+    const usersDocRef = doc(db, 'users', user?.uid || '');
+    const savedQuestionsRef = collection(usersDocRef, 'savedQuestions');
+    const q = query(savedQuestionsRef);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const questions = snapshot.docs.map((doc) => ({
+        _id: doc.id,
+        ...doc.data()
+      }));
+      setQuestions(questions);
+    });
+    return () => unsubscribe();
+  }, [user])
+
+  
+  const filterData = (item: questions) => {
+    if (item.answer_sanitized.toLowerCase().includes(searchQuery.toLowerCase())){
       return (
-        <Item title={item.title}/>
+        <Item {...item} />
       );
     }
     return null;
   }
   
   return (
-    // Main Box
     <SafeAreaView className='flex-1 justify-center bg-background'>
       <View className='flex-1 justify-start'>
         {/* Header */}
@@ -91,11 +74,10 @@ const Saved = () => {
         </View>
         {/* Border */}
         <View className="h-[1px] bg-tertiary" />
-
         {/* Search Bar */}
         <View className='justify-between'>
           <FormField
-            value={query}
+            value={searchQuery}
             placeholder='Search'
             handleChangeText={(e) => setQuery(e)}
             otherStyles='mt-2 pb-3 p-3'
@@ -106,9 +88,9 @@ const Saved = () => {
         </View>
         {/* Item List */}
         <FlatList
-          data={DATA}
+          data={questions}
           renderItem={({item}) => filterData(item)}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item._id}
           className="px-3"
         />
       </View>

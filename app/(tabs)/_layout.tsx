@@ -92,7 +92,7 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name='buzz-screen'
+          name='SavedQuestion'
           options={{ 
             href: null, 
             headerShown:false,

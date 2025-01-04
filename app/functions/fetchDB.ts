@@ -9,6 +9,6 @@ export interface questions {
 export const fetchDBQuestions = async (queryString: string): Promise<questions[]> => {
     const response = await fetch(`https://qbreader.org/api/query?queryString=${queryString}`);
     const data = await response.json();
-    const questions = data.tossups.questionArray
+    const questions = data.tossups.questionArray.slice(0, 10);
     return questions;
 }
