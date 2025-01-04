@@ -15,6 +15,7 @@ const Play = () => {
   const { user } = React.useContext(UserContext);
   const [paused, setPaused] = React.useState(false)
   const [modalVisible, setModalVisible] = React.useState(false)
+  const [modalVisible2, setModalVisible2] = React.useState(false)
   const [height, setHeight] = React.useState(0)
   const [currentPage, setCurrentPage] = React.useState(0); 
   const [questions, setQuestions] = React.useState<questions[]>([])
@@ -49,8 +50,8 @@ const Play = () => {
     fetchDBQuestions('grant wood').then((questions) => setQuestions(questions))
   }, [])
 
-  const onAdd = () =>{
-    router.push('/(tabs)/buzz-screen')
+  const onBuzz = () =>{
+    setModalVisible2(true);
   }
 
   return (
@@ -125,7 +126,8 @@ const Play = () => {
         <TouchableOpacity className="shadow-md flex-[0.5] mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(!paused)}>
           <Image source={paused? icons.play2: icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
-        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onAdd()}>
+        
+        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onBuzz()}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
         <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={ () => handleSave(questions[currentPage]) }>
