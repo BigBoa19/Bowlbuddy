@@ -15,7 +15,7 @@ const Play = () => {
   const { user } = React.useContext(UserContext);
   const [paused, setPaused] = React.useState(false)
   const [modalVisible, setModalVisible] = React.useState(false)
-  const [modalVisible2, setModalVisible2] = React.useState(false)
+  const [buzzModal, setBuzzModal] = React.useState(false)
   const [height, setHeight] = React.useState(0)
   const [currentPage, setCurrentPage] = React.useState(0); 
   const [questions, setQuestions] = React.useState<questions[]>([])
@@ -25,6 +25,21 @@ const Play = () => {
     const page = Math.round(offsetY / height); 
     setCurrentPage(page);
   };
+
+  const BuzzScreen = () => {
+    return (
+      <View className='flex-1 bg-background'>
+          <SafeAreaView className='flex-1 items-center justify-center bg-primary'>
+          <Text className='text-white text-3xl'>
+              BuzzScreen
+          </Text>
+          <TouchableOpacity onPress={onBuzzClose}>
+            <Text className=' text-white text-3xl'>Close</Text>
+          </TouchableOpacity>
+          </SafeAreaView>
+      </View>
+    )
+  }
 
   const handleSave = async (question: questions) => {
     try {
@@ -51,7 +66,10 @@ const Play = () => {
   }, [])
 
   const onBuzz = () =>{
-    setModalVisible2(true);
+    setBuzzModal(true);
+  }
+  const onBuzzClose = () =>{
+    setBuzzModal(false)
   }
 
   return (
@@ -126,7 +144,15 @@ const Play = () => {
         <TouchableOpacity className="shadow-md flex-[0.5] mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(!paused)}>
           <Image source={paused? icons.play2: icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
-        
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={buzzModal}
+          onRequestClose={() => {
+            setBuzzModal(false); // Close the modal when back button is pressed (for Android)
+          }}>
+          <BuzzScreen />
+        </Modal>
         <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onBuzz()}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
