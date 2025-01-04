@@ -15,6 +15,8 @@ import play2 from "../assets/icons/play2.png";
 import trash from "../assets/icons/trash.png";
 import save from "../assets/icons/save.png"
 import multiplayer from "../assets/icons/multiplayer.png";
+import google from "../assets/icons/google.png"
+import google_colored from "../assets/icons/google_colored.png"
 
 
 export default {
@@ -35,4 +37,6 @@ export default {
   save,
   multiplayer,
   pause2,
+  google,
+  google_colored,
 };

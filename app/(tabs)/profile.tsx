@@ -4,14 +4,18 @@ import icons from '@/constants/icons'
 import { auth } from '@/firebaseConfig'
 import { signOut } from 'firebase/auth'
 import { useRouter } from 'expo-router'
+import UserContext from '../context';
 
 const Profile = () => {
+  const { user } = React.useContext(UserContext);
   const router = useRouter();
 
   const SignOut = async () => {
     try {
       await signOut(auth);
       console.log("signed out");
+      router.push('/(auth)/sign-in')
+      
     } catch (error: any) {
       console.log(error);
     }
@@ -26,10 +30,8 @@ const Profile = () => {
 
       {/* Border */}
       <View className="h-[1px] bg-tertiary mt-[8px]" />
-
-
       <Image source={icons.profile} className='w-14 h-14 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />
-      <Text className='text-tertiary text-2xl font-gBold'>Noah Choi</Text>
+      <Text className='text-tertiary text-2xl font-gBold'>{user?.displayName}</Text>
       <TouchableOpacity onPress={SignOut}>
         <Image source={icons.logout} className='w-14 h-14 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />
       </TouchableOpacity>
