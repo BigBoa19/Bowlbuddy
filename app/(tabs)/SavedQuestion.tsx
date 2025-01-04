@@ -4,7 +4,7 @@ import icons from '@/constants/icons'
 import { useLocalSearchParams, router } from 'expo-router'
 
 const SavedQuestion = () => {
-    const handleGoBack = () => {router.back()}
+    const handleGoBack = () => {router.navigate("/(tabs)/saved")}
     const { question, question_sanitized, answer, answer_sanitized } = useLocalSearchParams<{
         question: string; question_sanitized: string; answer: string; answer_sanitized: string;
     }>()
