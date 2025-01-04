@@ -91,6 +91,14 @@ export default function TabsLayout() {
             )
           }}
         />
+        <Tabs.Screen
+          name='buzz-screen'
+          options={{ 
+            href: null, 
+            headerShown:false,
+            tabBarStyle: { display: 'none' }
+          }} 
+        />
       </Tabs>
     </>
   )
