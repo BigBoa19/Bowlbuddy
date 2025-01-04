@@ -1,4 +1,4 @@
-import { SafeAreaView,View, Text, Image, TouchableOpacity, Modal, FlatList } from 'react-native'
+import { SafeAreaView, View, Text, Image, TouchableOpacity, Modal, FlatList } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
@@ -72,7 +72,15 @@ const Play = () => {
           data={questions}
           keyExtractor={item => item._id}
           renderItem={({item}) => (
-            <TextAnimator sentence={item.question_sanitized} height={height} page={currentPage} paused={paused}/>
+            <View className="flex-1" style={{height: height}}>
+              {/* <TextAnimator 
+                sentence={item.question_sanitized} 
+                height={height} 
+                page={currentPage} 
+                paused={paused}
+              /> */}
+              <Text className='text-sm text-secondary text-left font-gBook'>{item.question_sanitized}</Text>
+            </View>
           )}
           pagingEnabled={true}
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
