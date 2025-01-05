@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { SafeAreaView, View, Text, Image, TouchableOpacity, Modal, FlatList, Animated } from 'react-native'
-import React from 'react'
-=======
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button } from 'react-native'
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated } from 'react-native'
 import React, { useEffect } from 'react'
->>>>>>> 6a6d663 (	modified:   android/app/src/main/AndroidManifest.xml)
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
 import TextAnimator from '../components/TextAnimator'
@@ -68,14 +63,6 @@ const Play = () => {
     return (
       <View className='flex-1 bg-background'>
           <SafeAreaView className='flex-1 items-center justify-center bg-primary'>
-<<<<<<< HEAD
-            <Text className='text-white text-3xl'>
-                BuzzScreen
-            </Text>
-            <TouchableOpacity onPress={onBuzzClose}>
-              <Text className=' text-white text-3xl'>Close</Text>
-            </TouchableOpacity>
-=======
           <Text className='text-white text-3xl'>
               BuzzScreen
           </Text>
@@ -85,26 +72,11 @@ const Play = () => {
           <TouchableOpacity onPress={onBuzzClose}>
             <Text className=' text-white text-3xl'>Close</Text>
           </TouchableOpacity>
->>>>>>> 6a6d663 (	modified:   android/app/src/main/AndroidManifest.xml)
           </SafeAreaView>
       </View>
     )
   }
 
-<<<<<<< HEAD
-  const BuzzCircle = () => {
-    return (
-      <Animated.View style={{
-        transform: [
-          {scale:scaleValue},
-          {translateX: 0},
-          {translateY: 25},
-        ],
-        zIndex: 9999
-      }} className='absolute flex-1 bg-transparent items-center justify-end bottom-48 left-48'>
-          <View className='w-6 h-6 justify-end p-9 mb-[65px] border-1 border-white rounded-full bg-primary'></View>
-      </Animated.View>
-=======
   const SettingsModal = () => {
     return (
       <View className='flex-1 justify-center'>
@@ -130,7 +102,6 @@ const Play = () => {
           </TouchableOpacity>
         </View>
       </View>
->>>>>>> 6a6d663 (	modified:   android/app/src/main/AndroidManifest.xml)
     )
   }
 
@@ -260,7 +231,6 @@ const Play = () => {
         <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={ () => handleSave(questions[currentPage]) }>
           <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
-        {true && <BuzzCircle/>}
       </View>
     </SafeAreaView>
   )
