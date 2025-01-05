@@ -4,7 +4,7 @@ import icons from '@/constants/icons'
 import { auth } from '@/firebaseConfig'
 import { signOut } from 'firebase/auth'
 import { useRouter } from 'expo-router'
-import UserContext from '../context';
+import { UserContext } from '../context';
 
 const Profile = () => {
   const { user } = React.useContext(UserContext);

@@ -1,7 +1,9 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, Animated, SafeAreaView, TouchableOpacity, Modal } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
+import React from 'react';
 
 import icons from "@/constants/icons";
+import { BuzzCircleContext } from '../context';
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -23,8 +25,73 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 }
 
 export default function TabsLayout() {
+  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
+  const scaleValue = React.useRef(new Animated.Value(0.1)).current;
+  const [buzzModal, setBuzzModal] = React.useState(false)
+
+  const onBuzzClose = () => {
+    setAnimating(false);
+    setBuzzModal(false);
+  }
+
+  const BuzzScreen = () => {
+    return (
+      <View className='flex-1 bg-primary'>
+          <SafeAreaView className='flex-1 items-center justify-center bg-secondary'>
+            <Text className='text-white text-3xl'>
+                BuzzScreen
+            </Text>
+            <TouchableOpacity onPress={onBuzzClose}>
+              <Text className=' text-white text-3xl'>Close</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+      </View>
+    )
+  }
+
+  const BuzzCircle = () => {
+    return (
+      <Animated.View style={{
+        transform: [
+          {scale:scaleValue},
+          {translateX: 0},
+          {translateY: 20},
+        ],
+        zIndex: 9999
+      }} className='absolute flex-1 bg-transparent items-center justify-end bottom-48 left-48'>
+          <View className='w-6 h-6 justify-end p-9 mb-[65px] border-1 border-white rounded-full bg-secondary'></View>
+      </Animated.View>
+    )
+  }
+
+  
+  React.useEffect(()=>{
+    if(isAnimating == true){
+      scaleValue.setValue(0.1);
+      Animated.timing(scaleValue, {
+          toValue: 16, // Scale up to x times the original size
+          duration: 250, // Animation duration in milliseconds
+          useNativeDriver: true, // Use native driver for better performance
+        }).start(() => {
+          setBuzzModal(true)
+      });
+    }
+    else{
+    }
+  }, [isAnimating])
+
   return (
     <View className='flex-1'>
+      <Modal
+          animationType="fade"
+          transparent={true}
+          visible={buzzModal}
+          onRequestClose={() => {
+            setBuzzModal(false); // Close the modal when back button is pressed (for Android)
+          }}>
+          <BuzzScreen />
+      </Modal>
+      {isAnimating && <BuzzCircle/>}
       <Tabs screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#8a92eb',

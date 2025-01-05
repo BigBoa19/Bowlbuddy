@@ -3,7 +3,7 @@ import * as Google from "expo-auth-session/providers/google"
 import * as WebBrowser from "expo-web-browser"
 import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
 import { auth, db } from "../firebaseConfig"
-import UserContext from './context';
+import { UserContext } from './context';
 import { Redirect, router } from "expo-router"
 import SignIn from "./(auth)/sign-in"
 import { doc, setDoc } from "firebase/firestore"

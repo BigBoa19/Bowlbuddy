@@ -7,12 +7,15 @@ import { questions, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
-import UserContext from '../context';
+import { UserContext } from '../context';
+import { router } from 'expo-router'
+import { BuzzCircleContext } from '../context'
 import Voice from '@react-native-voice/voice';
 
 
 const Play = () => {
-  const scaleValue = React.useRef(new Animated.Value(1)).current;
+  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
+  const scaleValue = React.useRef(new Animated.Value(0.1)).current;
   const { user } = React.useContext(UserContext);
   const [paused, setPaused] = React.useState(false)
   const [modalVisible, setModalVisible] = React.useState(false)
@@ -28,54 +31,6 @@ const Play = () => {
     setCurrentPage(page);
   };
 
-  const BuzzScreen = () => {
-    const [started, setStarted] = React.useState(false)
-    const [results, setResults] = React.useState([])
-    const startSpeechToText = async () => {
-      await Voice.start('en-US')
-      setStarted(true)
-    }
-
-    const stopSpeechToText = async () => {
-      await Voice.stop()
-      setStarted(false)
-    }
-
-    useEffect(() => {
-      Voice.onSpeechError = onSpeechError
-      Voice.onSpeechResults = onSpeechResults
-
-      return () => {
-        Voice.destroy().then(Voice.removeAllListeners)
-      }
-    }, [])
-
-    const onSpeechResults = (result: any) => {
-      setResults(result.value);
-    };
-  
-    const onSpeechError = (error: any) => {
-      console.log(error);
-    };
-
-    
-
-    return (
-      <View className='flex-1 bg-background'>
-          <SafeAreaView className='flex-1 items-center justify-center bg-primary'>
-          <Text className='text-white text-3xl'>
-              BuzzScreen
-          </Text>
-          {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
-          {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
-          {results.map((result, index) => <Text className='text-white text-3xl' key={index}>{result}</Text>)}
-          <TouchableOpacity onPress={onBuzzClose}>
-            <Text className=' text-white text-3xl'>Close</Text>
-          </TouchableOpacity>
-          </SafeAreaView>
-      </View>
-    )
-  }
 
   const SettingsModal = () => {
     return (
@@ -130,20 +85,7 @@ const Play = () => {
   }, [])
 
   const onBuzz = () =>{
-    //setCircleModal(true)
-    scaleValue.setValue(1);
-    Animated.timing(scaleValue, {
-        toValue: 17, // Scale up to x times the original size
-        duration: 160, // Animation duration in milliseconds
-        useNativeDriver: true, // Use native driver for better performance
-      }).start(() => {
-        setBuzzModal(true)
-    });
-  }
-  const onBuzzClose = () =>{
-    setBuzzModal(false)
-    setCircleModal(false)
-    scaleValue.setValue(1);
+    setAnimating(true)
   }
 
   return (
@@ -213,15 +155,7 @@ const Play = () => {
           <Image source={paused? icons.play2: icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
         {/* Buzz Screen Modal */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={buzzModal}
-          onRequestClose={() => {
-            setBuzzModal(false); // Close the modal when back button is pressed (for Android)
-          }}>
-          <BuzzScreen />
-        </Modal>
+        <></>
         {/* Buzz! */}
         <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onBuzz()}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>

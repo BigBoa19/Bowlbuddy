@@ -5,6 +5,12 @@ type UserContextType = {
     user: User | null;
 };
 
-const UserContext = createContext<UserContextType>({user: null });
+type BuzzCircleContextType = {
+    isAnimating: boolean;
+    setAnimating: (animating: boolean) => any;
+};
+  
 
-export default UserContext;
+export const UserContext = createContext<UserContextType>({user: null });
+export const BuzzCircleContext = createContext<BuzzCircleContextType>({ isAnimating: false, setAnimating: () => {} });
+

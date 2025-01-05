@@ -1,12 +1,15 @@
 import { Stack, SplashScreen } from "expo-router";
 import "../global.css";
-import UserContext from "./context"; import useUserData from './functions/useUserData';
+import { UserContext } from "./context"; import useUserData from './functions/useUserData';
 import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
+import { BuzzCircleContext } from "./context"
 
 export default function RootLayout() {
+  const [isAnimating, setIsAnimating] = React.useState(false);
   const userData = useUserData();
+
 
   const [fontsLoaded, error] = useFonts({
     "Gotham-Black": require("../assets/fonts/Gotham-Black.otf"),
@@ -35,13 +38,15 @@ export default function RootLayout() {
 
   return (
     <AlertNotificationRoot>
-      <UserContext.Provider value={{ user: userData.user }} >
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-        </Stack>
-      </UserContext.Provider>
+      <BuzzCircleContext.Provider value={{ isAnimating:isAnimating, setAnimating:setIsAnimating }}>
+        <UserContext.Provider value={{ user: userData.user }} >
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          </Stack>
+        </UserContext.Provider>
+      </BuzzCircleContext.Provider>
     </AlertNotificationRoot>
   )
 }
