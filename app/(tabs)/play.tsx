@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { SafeAreaView, View, Text, Image, TouchableOpacity, Modal, FlatList, Animated } from 'react-native'
 import React from 'react'
+=======
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button } from 'react-native'
+import React, { useEffect } from 'react'
+>>>>>>> 6a6d663 (	modified:   android/app/src/main/AndroidManifest.xml)
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
 import TextAnimator from '../components/TextAnimator'
@@ -8,7 +13,7 @@ import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
 import UserContext from '../context';
-import { router } from 'expo-router'
+import Voice from '@react-native-voice/voice';
 
 
 const Play = () => {
@@ -29,20 +34,64 @@ const Play = () => {
   };
 
   const BuzzScreen = () => {
+    const [started, setStarted] = React.useState(false)
+    const [results, setResults] = React.useState([])
+    const startSpeechToText = async () => {
+      await Voice.start('en-US')
+      setStarted(true)
+    }
+
+    const stopSpeechToText = async () => {
+      await Voice.stop()
+      setStarted(false)
+    }
+
+    useEffect(() => {
+      Voice.onSpeechError = onSpeechError
+      Voice.onSpeechResults = onSpeechResults
+
+      return () => {
+        Voice.destroy().then(Voice.removeAllListeners)
+      }
+    }, [])
+
+    const onSpeechResults = (result: any) => {
+      setResults(result.value);
+    };
+  
+    const onSpeechError = (error: any) => {
+      console.log(error);
+    };
+
+    
+
     return (
       <View className='flex-1 bg-background'>
           <SafeAreaView className='flex-1 items-center justify-center bg-primary'>
+<<<<<<< HEAD
             <Text className='text-white text-3xl'>
                 BuzzScreen
             </Text>
             <TouchableOpacity onPress={onBuzzClose}>
               <Text className=' text-white text-3xl'>Close</Text>
             </TouchableOpacity>
+=======
+          <Text className='text-white text-3xl'>
+              BuzzScreen
+          </Text>
+          {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
+          {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
+          {results.map((result, index) => <Text className='text-white text-3xl' key={index}>{result}</Text>)}
+          <TouchableOpacity onPress={onBuzzClose}>
+            <Text className=' text-white text-3xl'>Close</Text>
+          </TouchableOpacity>
+>>>>>>> 6a6d663 (	modified:   android/app/src/main/AndroidManifest.xml)
           </SafeAreaView>
       </View>
     )
   }
 
+<<<<<<< HEAD
   const BuzzCircle = () => {
     return (
       <Animated.View style={{
@@ -55,6 +104,33 @@ const Play = () => {
       }} className='absolute flex-1 bg-transparent items-center justify-end bottom-48 left-48'>
           <View className='w-6 h-6 justify-end p-9 mb-[65px] border-1 border-white rounded-full bg-primary'></View>
       </Animated.View>
+=======
+  const SettingsModal = () => {
+    return (
+      <View className='flex-1 justify-center'>
+        <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+          <Text className='text-tertiary text-2xl font-gBold pb-3'>Settings</Text>
+          <Text className='text-tertiary text-xl font-gBold'>Level</Text>
+          <View className='flex-row justify-between'>
+            <CustomButton title='MS' handlePress={() => {}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='HS' handlePress={() => {}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='College' handlePress={() => {}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Open' handlePress={() => {}} containerStyles='mt-2 ml-2' />
+          </View>
+          <Text className='text-tertiary text-xl font-gBold py-2'>Category</Text>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="flex-row">
+            <CustomButton title='Science' handlePress={() => {}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='History' handlePress={() => {}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Fine Arts' handlePress={() => {}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Literature' handlePress={() => {}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Mythology' handlePress={() => {}} containerStyles='mt-2 ml-2' />
+          </ScrollView>
+          <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <CustomButton title='Close' handlePress={() => setModalVisible(false)} containerStyles='mt-5' />
+          </TouchableOpacity>
+        </View>
+      </View>
+>>>>>>> 6a6d663 (	modified:   android/app/src/main/AndroidManifest.xml)
     )
   }
 
@@ -111,14 +187,7 @@ const Play = () => {
           onRequestClose={() => {
             setModalVisible(!modalVisible);
           }}>
-          <View className='flex-1 justify-center items-center'>
-            <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
-              <Text className='text-tertiary text-2xl font-gBold'>Settings</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <CustomButton title='Close' handlePress={() => setModalVisible(false)} containerStyles='mt-5' />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <SettingsModal />
         </Modal>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image source={icons.settings} className='w-14 h-14 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />
@@ -196,5 +265,7 @@ const Play = () => {
     </SafeAreaView>
   )
 }
+
+
 
 export default Play

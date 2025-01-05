@@ -1,65 +1,46 @@
 import { View, Text, Image, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native'
 import React from 'react'
-import { Link, useRouter } from 'expo-router'
-import FormField from '../components/FormField'
-import CustomButton from '../components/CustomButton'
+import UserContext from '../context';
+import { doc, setDoc } from "firebase/firestore"
 import icons from '@/constants/icons'
+import { auth, db } from "../../firebaseConfig"
+import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
+import * as Google from "expo-auth-session/providers/google"
 
-const SignIn = ({promptAsync}:any) => {
-  const [form, setForm] = React.useState({
-    email: '',
-    password: ''
+
+
+const SignIn = () => {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId:"686553870661-e1s26teaahepleu253tmsa8tkmcume1q.apps.googleusercontent.com",
+    androidClientId:"686553870661-4n04cavoeg33jsftm084k769tvhecf3n.apps.googleusercontent.com",
   })
-  const router = useRouter()
-  const handleGoBack = () => {
-    router.back()
+
+  const addUserToDatabase = async (user: User) => {
+    if (!user) return;
+    const date = new Date();
+    const dateString = date.toLocaleString();
+    const usersDocRef = doc(db, 'users', user.uid);
+    await setDoc(usersDocRef, { email: user.email, name:user.displayName, timestamp: dateString}, { merge: true } );
   }
+
+  React.useEffect(() => {
+    if (response?.type=="success"){
+      const {id_token} = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential).then((userCredential) => {
+        const user = userCredential.user;
+        addUserToDatabase(user)
+      }).catch((error) => {
+        console.log('Error: ', error)
+      });
+    }
+  },[response])
+
   return (
     <SafeAreaView className=' bg-secondary h-full'>
-      {/* <TouchableOpacity onPress={handleGoBack} className='p-4'>
-          <Image source={icons.leftArrow} resizeMode='contain' className='w-[20px] h-[20px]' tintColor={"#2e2a72"} />
-      </TouchableOpacity> */}
+
       <ScrollView>
-        <View className='flex-1 w-full justify-center h-full px-4  mt-6 '>
-
-          <Text className="text-2xl font-semibold text-primary font-poppinsSemiBold pl-1">
-              Log In to BowlBuddy
-          </Text>
-          {/* Email Text Field */}
-          <FormField
-            title='Email'
-            titleStyles='text-primary'
-            value={form.email}
-            placeholder='Enter your email'
-            handleChangeText={(e) => setForm({...form, email: e})}
-            otherStyles='mt-7'
-            startCaps={false}
-          />
-          {/* Password Text Field */}
-          <FormField
-            title='Password'
-            titleStyles='text-primary'
-            value={form.password}
-            placeholder='Enter your password'
-            handleChangeText={(e) => setForm({...form, password: e})}
-            otherStyles='mt-7'
-            startCaps={false}
-          />
-          {/* Login Button */}
-          <CustomButton
-            title='Login'
-            handlePress={() => console.log('Login')}
-            containerStyles='mt-9'
-          />
-
-          <View className="flex justify-center pt-5 flex-row gap-2">
-            <Text className="text-lg text-tertiary font-poppinsRegular">
-              Don't have an account?
-            </Text>
-          </View>
-          <View className="flex justify-center pt-5">
-          </View>
-        </View>
+        
         <View className="flex justify-center pt-2 px-4">
           <TouchableOpacity onPress={() => promptAsync()} className="flex-row items-center justify-center bg-white p-4 rounded-lg mt-2 shadow-lg">
             <Image

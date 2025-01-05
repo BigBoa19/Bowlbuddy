@@ -30,7 +30,6 @@ const Profile = () => {
 
       {/* Border */}
       <View className="h-[1px] bg-tertiary mt-[8px]" />
-      <Image source={icons.profile} className='w-14 h-14 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />
       <Text className='text-tertiary text-2xl font-gBold'>{user?.displayName}</Text>
       <TouchableOpacity onPress={SignOut}>
         <Image source={icons.logout} className='w-14 h-14 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />

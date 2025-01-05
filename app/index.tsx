@@ -1,12 +1,13 @@
 import React from "react"
-import SignIn from "./(auth)/sign-in"
 import * as Google from "expo-auth-session/providers/google"
 import * as WebBrowser from "expo-web-browser"
 import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
 import { auth, db } from "../firebaseConfig"
 import UserContext from './context';
-import { Redirect } from "expo-router"
+import { Redirect, router } from "expo-router"
+import SignIn from "./(auth)/sign-in"
 import { doc, setDoc } from "firebase/firestore"
+import { View, Text, ActivityIndicator } from "react-native"
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -19,6 +20,7 @@ export default function Index() {
   })
 
   const addUserToDatabase = async (user: User) => {
+    if (!user) return;
     const date = new Date();
     const dateString = date.toLocaleString();
     const usersDocRef = doc(db, 'users', user.uid);
@@ -38,6 +40,12 @@ export default function Index() {
     }
   },[response])
 
-
-  return user ? <Redirect href='/play'/> : <SignIn promptAsync={promptAsync}/>;
+  // return (
+  //   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  //     <ActivityIndicator size="large" color="#0000ff" />
+  //     <Text style={{ marginTop: 10 }}>Loading...</Text>
+    
+  //   </View>
+  // )
+  return user ? <Redirect href='/play'/> : <SignIn />;
 }

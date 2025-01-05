@@ -51,6 +51,10 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow Voice to Text Tutorial to access the microphone</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Allow Voice to Text Tutorial to securely recognize user speech</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
