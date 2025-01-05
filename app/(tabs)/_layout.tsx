@@ -24,7 +24,7 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 
 export default function TabsLayout() {
   return (
-    <>
+    <View className='flex-1'>
       <Tabs screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#8a92eb',
@@ -100,6 +100,6 @@ export default function TabsLayout() {
           }} 
         />
       </Tabs>
-    </>
+    </View>
   )
 }

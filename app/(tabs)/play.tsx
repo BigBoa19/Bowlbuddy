@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, Image, TouchableOpacity, Modal, FlatList } from 'react-native'
+import { SafeAreaView, View, Text, Image, TouchableOpacity, Modal, FlatList, Animated } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
@@ -12,10 +12,12 @@ import { router } from 'expo-router'
 
 
 const Play = () => {
+  const scaleValue = React.useRef(new Animated.Value(1)).current;
   const { user } = React.useContext(UserContext);
   const [paused, setPaused] = React.useState(false)
   const [modalVisible, setModalVisible] = React.useState(false)
   const [buzzModal, setBuzzModal] = React.useState(false)
+  const [circleModal, setCircleModal] = React.useState(false)
   const [height, setHeight] = React.useState(0)
   const [currentPage, setCurrentPage] = React.useState(0); 
   const [questions, setQuestions] = React.useState<questions[]>([])
@@ -30,14 +32,29 @@ const Play = () => {
     return (
       <View className='flex-1 bg-background'>
           <SafeAreaView className='flex-1 items-center justify-center bg-primary'>
-          <Text className='text-white text-3xl'>
-              BuzzScreen
-          </Text>
-          <TouchableOpacity onPress={onBuzzClose}>
-            <Text className=' text-white text-3xl'>Close</Text>
-          </TouchableOpacity>
+            <Text className='text-white text-3xl'>
+                BuzzScreen
+            </Text>
+            <TouchableOpacity onPress={onBuzzClose}>
+              <Text className=' text-white text-3xl'>Close</Text>
+            </TouchableOpacity>
           </SafeAreaView>
       </View>
+    )
+  }
+
+  const BuzzCircle = () => {
+    return (
+      <Animated.View style={{
+        transform: [
+          {scale:scaleValue},
+          {translateX: 0},
+          {translateY: 25},
+        ],
+        zIndex: 9999
+      }} className='absolute flex-1 bg-transparent items-center justify-end bottom-48 left-48'>
+          <View className='w-6 h-6 justify-end p-9 mb-[65px] border-1 border-white rounded-full bg-primary'></View>
+      </Animated.View>
     )
   }
 
@@ -66,10 +83,20 @@ const Play = () => {
   }, [])
 
   const onBuzz = () =>{
-    setBuzzModal(true);
+    //setCircleModal(true)
+    scaleValue.setValue(1);
+    Animated.timing(scaleValue, {
+        toValue: 17, // Scale up to x times the original size
+        duration: 160, // Animation duration in milliseconds
+        useNativeDriver: true, // Use native driver for better performance
+      }).start(() => {
+        setBuzzModal(true)
+    });
   }
   const onBuzzClose = () =>{
     setBuzzModal(false)
+    setCircleModal(false)
+    scaleValue.setValue(1);
   }
 
   return (
@@ -141,9 +168,11 @@ const Play = () => {
 
       {/* Buttons */}
       <View className='flex-row justify-between'>
-        <TouchableOpacity className="shadow-md flex-[0.5] mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(!paused)}>
+        {/* Pause Icon */}
+        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(!paused)}>
           <Image source={paused? icons.play2: icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
+        {/* Buzz Screen Modal */}
         <Modal
           animationType="fade"
           transparent={true}
@@ -153,12 +182,16 @@ const Play = () => {
           }}>
           <BuzzScreen />
         </Modal>
+        {/* Buzz! */}
         <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onBuzz()}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
+        {/* Circle Modal */}
+        {/* Saved icon */}
         <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={ () => handleSave(questions[currentPage]) }>
           <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
+        {true && <BuzzCircle/>}
       </View>
     </SafeAreaView>
   )
