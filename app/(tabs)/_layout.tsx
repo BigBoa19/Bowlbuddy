@@ -26,10 +26,11 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 
 export default function TabsLayout() {
   const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
-  const scaleValue = React.useRef(new Animated.Value(0.1)).current;
+  const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [buzzModal, setBuzzModal] = React.useState(false)
 
   const onBuzzClose = () => {
+    scaleValue.setValue(0);
     setAnimating(false);
     setBuzzModal(false);
   }
@@ -88,11 +89,11 @@ export default function TabsLayout() {
         transform: [
           {scale:scaleValue},
           {translateX: 0},
-          {translateY: 20},
+          {translateY: -17},
         ],
         zIndex: 9999
-      }} className='absolute flex-1 bg-transparent items-center justify-end bottom-48 left-48'>
-          <View className='w-6 h-6 justify-end p-9 mb-[65px] border-1 border-white rounded-full bg-secondary'></View>
+      }} className='absolute flex-1 bg-transparent items-center justify-end bottom-28 right-44 left-44'>
+          <View className='w-6 h-6 p-9 rounded-full bg-secondary'></View>
       </Animated.View>
     )
   }
@@ -100,10 +101,10 @@ export default function TabsLayout() {
   
   React.useEffect(()=>{
     if(isAnimating == true){
-      scaleValue.setValue(0.1);
+      scaleValue.setValue(0);
       Animated.timing(scaleValue, {
           toValue: 16, // Scale up to x times the original size
-          duration: 250, // Animation duration in milliseconds
+          duration: 400, // Animation duration in milliseconds
           useNativeDriver: true, // Use native driver for better performance
         }).start(() => {
           setBuzzModal(true)
