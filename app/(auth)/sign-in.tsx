@@ -1,6 +1,6 @@
 import { View, Text, Image, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native'
 import React from 'react'
-import UserContext from '../context';
+import { UserContext } from '../context';
 import { doc, setDoc } from "firebase/firestore"
 import icons from '@/constants/icons'
 import { auth, db } from "../../firebaseConfig"

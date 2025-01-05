@@ -1,7 +1,7 @@
-import { View, Text, Image, Animated, SafeAreaView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, Image, Animated, SafeAreaView, Button, TouchableOpacity, Modal } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
-
+import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
 import { BuzzCircleContext } from '../context';
 
@@ -35,12 +35,45 @@ export default function TabsLayout() {
   }
 
   const BuzzScreen = () => {
+    const [started, setStarted] = React.useState(false);
+    const [results, setResults] = React.useState([]);
+
+    React.useEffect(() => {
+      Voice.onSpeechError = onSpeechError;
+      Voice.onSpeechResults = onSpeechResults;
+
+      return () => {
+        Voice.destroy().then(Voice.removeAllListeners);
+      }
+    }, []);
+
+    const startSpeechToText = async () => {
+      await Voice.start("en-US");
+      setStarted(true);
+    };
+
+    const stopSpeechToText = async () => {
+      await Voice.stop();
+      setStarted(false);
+    };
+
+    const onSpeechResults = (result: any) => {
+      setResults(result.value);
+    };
+
+    const onSpeechError = (error: any) => {
+      console.log(error);
+    };
+
     return (
       <View className='flex-1 bg-primary'>
           <SafeAreaView className='flex-1 items-center justify-center bg-secondary'>
             <Text className='text-white text-3xl'>
                 BuzzScreen
             </Text>
+            {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
+            {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
+            {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}
             <TouchableOpacity onPress={onBuzzClose}>
               <Text className=' text-white text-3xl'>Close</Text>
             </TouchableOpacity>

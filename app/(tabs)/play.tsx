@@ -10,7 +10,7 @@ import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext } from '../context';
 import { router } from 'expo-router'
 import { BuzzCircleContext } from '../context'
-import Voice from '@react-native-voice/voice';
+
 
 
 const Play = () => {
