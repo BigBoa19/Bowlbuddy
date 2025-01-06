@@ -10,6 +10,7 @@ import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext } from '../context';
 import { router } from 'expo-router'
 import { BuzzCircleContext } from '../context'
+import Slider from '@react-native-community/slider'
 
 
 
@@ -34,7 +35,7 @@ const Play = () => {
 
   const SettingsModal = () => {
     return (
-      <View className='flex-1 justify-center'>
+      <View className='flex-1 justify-center p-4'>
         <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
           <Text className='text-tertiary text-2xl font-gBold pb-3'>Settings</Text>
           <Text className='text-tertiary text-xl font-gBold'>Level</Text>
@@ -52,6 +53,23 @@ const Play = () => {
             <CustomButton title='Literature' handlePress={() => {}} containerStyles='mt-2 mx-2' />
             <CustomButton title='Mythology' handlePress={() => {}} containerStyles='mt-2 ml-2' />
           </ScrollView>
+          <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
+          <View className='flex-row justify-between'>
+            <CustomButton title='Tossup' handlePress={() => {}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='Bonus' handlePress={() => {}} containerStyles='mt-2 ml-2' />
+          </View>
+          <Text className='text-tertiary text-xl font-gBold py-2'>Reading Speed</Text>
+          <Slider
+            style={{width: 240, height: 40}}
+            minimumValue={0}
+            minimumTrackTintColor='#8a92eb'
+            maximumTrackTintColor='#161622'
+            thumbTintColor='#cccfff'
+          />
+          <View className='flex-row justify-between'>
+            <CustomButton title='Enable Timer' handlePress={() => {}} containerStyles='mt-5 mr-2' />
+            <CustomButton title='Allow Rebuzz' handlePress={() => {}} containerStyles='mt-5 ml-2' />
+          </View>
           <TouchableOpacity onPress={() => setModalVisible(false)}>
             <CustomButton title='Close' handlePress={() => setModalVisible(false)} containerStyles='mt-5' />
           </TouchableOpacity>
