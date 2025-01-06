@@ -30,7 +30,9 @@ export default function TabsLayout() {
   const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [ buzzModal, setBuzzModal ] = React.useState(false)
 
-
+  useEffect(() => {
+    setCurrentQuestion(currentQuestion)
+  },[currentQuestion])
   
 
   const BuzzScreen = () => {
@@ -91,7 +93,7 @@ export default function TabsLayout() {
           <Text className='text-white text-3xl'>
               BuzzScreen
           </Text>
-          <Text className='text-s text-red-200'>Answer: {currentQuestion.answer_sanitized}</Text>
+          {/* <Text className='text-s text-red-200'>Answer: {currentQuestion.answer_sanitized}</Text> */}
           {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
           {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
           {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}

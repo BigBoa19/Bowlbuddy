@@ -12,3 +12,12 @@ export const fetchDBQuestions = async (queryString: string): Promise<questions[]
     const questions = data.tossups.questionArray.slice(0, 10);
     return questions;
 }
+
+export const fetchDBQuestionsNoSearch = async (): Promise<questions[]> => {
+    const response = await fetch(`https://www.qbreader.org/api/query?difficulties=3&randomize=true`);
+    const data = await response.json();
+    const questions = data.tossups.questionArray;
+    questions.splice(15);
+
+    return questions;
+}

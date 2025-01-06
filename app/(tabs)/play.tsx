@@ -3,28 +3,32 @@ import React, { useEffect } from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
 import TextAnimator from '../components/TextAnimator'
-import { questions, fetchDBQuestions } from '../functions/fetchDB'
+import { questions, fetchDBQuestionsNoSearch } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext } from '../context';
-import { router } from 'expo-router'
 import Slider from '@react-native-community/slider'
 
 
 
 const Play = () => {
-  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext);
+  const { setAnimating } = React.useContext(BuzzCircleContext);
   const { user } = React.useContext(UserContext);
   const [paused, setPaused] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [height, setHeight] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0); 
   const [questions, setQuestions] = React.useState<questions[]>([]);
-  const { currentQuestion, setCurrentQuestion } = React.useContext(QuestionContext);
+  const { setCurrentQuestion } = React.useContext(QuestionContext);
 
   React.useEffect(() => {
-    fetchDBQuestions('grant wood').then((questions) => setQuestions(questions))
+    console.log("fetched questions")
+    fetchDBQuestionsNoSearch().then((questions) => {
+      setQuestions(questions)
+      console.log(questions)
+    })
+    
   }, [])
 
 
@@ -100,6 +104,8 @@ const Play = () => {
     }
   }
 
+
+
   const onBuzz = () =>{
     setAnimating(true)
   }
@@ -159,7 +165,6 @@ const Play = () => {
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
-          windowSize={1}
           className='flex-1'
         />
       </View>
