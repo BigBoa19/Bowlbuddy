@@ -1,9 +1,9 @@
-import { View, Text, Image, Animated, SafeAreaView, Button, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, Image, Animated, SafeAreaView, Button, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
-import { BuzzCircleContext } from '../context';
+import { BuzzCircleContext, QuestionContext } from '../context';
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -25,19 +25,26 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 }
 
 export default function TabsLayout() {
+  const { currentQuestion, setCurrentQuestion } = React.useContext(QuestionContext);
   const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
   const scaleValue = React.useRef(new Animated.Value(0)).current;
-  const [buzzModal, setBuzzModal] = React.useState(false)
+  const [ buzzModal, setBuzzModal ] = React.useState(false)
 
-  const onBuzzClose = () => {
-    scaleValue.setValue(0);
-    setAnimating(false);
-    setBuzzModal(false);
-  }
+
+  
 
   const BuzzScreen = () => {
-    const [started, setStarted] = React.useState(false);
-    const [results, setResults] = React.useState([]);
+    const [ inputAnswer, setInputAnswer ] = React.useState('')
+    const [ started, setStarted ] = React.useState(false);
+    const [ results, setResults ] = React.useState([]);
+    const [ checkTrue, setCheckTrue ] = React.useState(false);
+    const [ checkFalse, setCheckFalse ] = React.useState(false);
+    const onBuzzClose = () => {
+      scaleValue.setValue(0);
+      setAnimating(false);
+      setBuzzModal(false);
+      setCheckFalse(false); setCheckTrue(false);
+    }
 
     React.useEffect(() => {
       Voice.onSpeechError = onSpeechError;
@@ -60,25 +67,49 @@ export default function TabsLayout() {
 
     const onSpeechResults = (result: any) => {
       setResults(result.value);
+      setInputAnswer(result.value[0])
     };
 
     const onSpeechError = (error: any) => {
       console.log(error);
     };
+    
+    const checkAnswer = (answer:string) =>{
+      setCheckTrue(false);
+      setCheckFalse(false);
+      if(currentQuestion.answer_sanitized.toLowerCase().includes(answer.toLowerCase()) && answer!='' && answer!=' '){
+        setCheckTrue(true);
+      }
+      else{
+        setCheckFalse(true);
+      }
+    }
 
     return (
       <View className='flex-1 bg-primary'>
-          <SafeAreaView className='flex-1 items-center justify-center bg-secondary'>
-            <Text className='text-white text-3xl'>
-                BuzzScreen
-            </Text>
-            {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
-            {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
-            {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}
-            <TouchableOpacity onPress={onBuzzClose}>
-              <Text className=' text-white text-3xl'>Close</Text>
-            </TouchableOpacity>
-          </SafeAreaView>
+        <SafeAreaView className='flex-1 items-center justify-center bg-secondary'>
+          <Text className='text-white text-3xl'>
+              BuzzScreen
+          </Text>
+          <Text className='text-s text-red-200'>Answer: {currentQuestion.answer_sanitized}</Text>
+          {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
+          {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
+          {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}
+          <TextInput
+            value={inputAnswer}
+            placeholder='Answer Here'
+            onChangeText={(e) => setInputAnswer(e)}
+            className='flex-row w-96 border-2 p-2 rounded-lg'
+          />
+          <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>checkAnswer(inputAnswer)}>
+            <Text className='font-gBold'>Submit Answer</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onBuzzClose}>
+            <Text className=' text-white text-3xl'>Close</Text>
+          </TouchableOpacity>
+          { checkTrue && <Text className='text-2xl text-green-300'>Correct!</Text> }
+          { checkFalse && <Text className='text-2xl text-red-500'>Incorrect!</Text> }
+        </SafeAreaView>
       </View>
     )
   }

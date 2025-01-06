@@ -7,31 +7,33 @@ import { questions, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
-import { UserContext } from '../context';
+import { UserContext, BuzzCircleContext, QuestionContext } from '../context';
 import { router } from 'expo-router'
-import { BuzzCircleContext } from '../context'
 import Slider from '@react-native-community/slider'
 
 
 
 const Play = () => {
-  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
-  const scaleValue = React.useRef(new Animated.Value(0.1)).current;
+  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext);
   const { user } = React.useContext(UserContext);
-  const [paused, setPaused] = React.useState(false)
-  const [modalVisible, setModalVisible] = React.useState(false)
-  const [buzzModal, setBuzzModal] = React.useState(false)
-  const [circleModal, setCircleModal] = React.useState(false)
-  const [height, setHeight] = React.useState(0)
+  const [paused, setPaused] = React.useState(false);
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [height, setHeight] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0); 
-  const [questions, setQuestions] = React.useState<questions[]>([])
+  const [questions, setQuestions] = React.useState<questions[]>([]);
+  const { currentQuestion, setCurrentQuestion } = React.useContext(QuestionContext);
+
+  React.useEffect(() => {
+    fetchDBQuestions('grant wood').then((questions) => setQuestions(questions))
+  }, [])
+
 
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     const page = Math.round(offsetY / height); 
     setCurrentPage(page);
+    setCurrentQuestion(questions[currentPage])
   };
-
 
   const SettingsModal = () => {
     return (
@@ -97,10 +99,6 @@ const Play = () => {
       console.log(error);
     }
   }
-
-  React.useEffect(() => {
-    fetchDBQuestions('grant wood').then((questions) => setQuestions(questions))
-  }, [])
 
   const onBuzz = () =>{
     setAnimating(true)

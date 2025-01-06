@@ -1,12 +1,13 @@
 import { Stack, SplashScreen } from "expo-router";
 import "../global.css";
-import { UserContext } from "./context"; import useUserData from './functions/useUserData';
+import { QuestionContext, UserContext } from "./context"; import useUserData from './functions/useUserData';
 import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
 import { BuzzCircleContext } from "./context"
 
 export default function RootLayout() {
+  const [currentQuestion, setCurrentQuestion] = React.useState({_id:'', question:'', question_sanitized:'', answer:'',  answer_sanitized:''})
   const [isAnimating, setIsAnimating] = React.useState(false);
   const userData = useUserData();
 
@@ -38,15 +39,23 @@ export default function RootLayout() {
 
   return (
     <AlertNotificationRoot>
+      {/* Providers */}
+      <QuestionContext.Provider value={{currentQuestion:currentQuestion, setCurrentQuestion:setCurrentQuestion}}>
       <BuzzCircleContext.Provider value={{ isAnimating:isAnimating, setAnimating:setIsAnimating }}>
-        <UserContext.Provider value={{ user: userData.user }} >
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-          </Stack>
-        </UserContext.Provider>
+      <UserContext.Provider value={{ user: userData.user }} >
+      {/* Providers */}
+
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+        </Stack>
+      
+      {/* Providers */}
+      </UserContext.Provider>
       </BuzzCircleContext.Provider>
+      </QuestionContext.Provider>
+      {/* Providers */}
     </AlertNotificationRoot>
   )
 }
