@@ -30,9 +30,6 @@ export default function TabsLayout() {
   const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [ buzzModal, setBuzzModal ] = React.useState(false)
 
-  useEffect(() => {
-    setCurrentQuestion(currentQuestion)
-  },[currentQuestion])
   
 
   const BuzzScreen = () => {

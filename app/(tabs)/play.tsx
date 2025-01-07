@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
 import TextAnimator from '../components/TextAnimator'
-import { questions, fetchDBQuestionsNoSearch } from '../functions/fetchDB'
+import { questions, fetchDBQuestionsNoSearch, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
@@ -22,14 +22,12 @@ const Play = () => {
   const [questions, setQuestions] = React.useState<questions[]>([]);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
 
-  React.useEffect(() => {
-    console.log("fetched questions")
+  const fetchData = async () => {
     fetchDBQuestionsNoSearch().then((questions) => {
       setQuestions(questions)
       console.log(questions)
     })
-    
-  }, [])
+  }
 
 
   const handleScroll = (event: any) => {
@@ -147,7 +145,11 @@ const Play = () => {
 
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
-        <FlatList
+        { true ?  <CustomButton 
+          title="Start"
+          handlePress={() => {}}
+          containerStyles='bg-tertiary'
+        /> : <FlatList
           data={questions}
           keyExtractor={item => item._id}
           renderItem={({item}) => (
@@ -166,7 +168,9 @@ const Play = () => {
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
           className='flex-1'
-        />
+        />}
+        
+       
       </View>
 
       {/* Buttons */}
