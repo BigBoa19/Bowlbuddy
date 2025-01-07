@@ -1,16 +1,14 @@
 import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated } from 'react-native'
-import React, { useEffect } from 'react'
+import React from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
 import TextAnimator from '../components/TextAnimator'
-import { questions, fetchDBQuestionsNoSearch, fetchDBQuestions } from '../functions/fetchDB'
+import { questions, fetchDBQuestionsNoSearch } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext } from '../context';
 import Slider from '@react-native-community/slider'
-
-
 
 const Play = () => {
   const { setAnimating } = React.useContext(BuzzCircleContext);
@@ -21,14 +19,15 @@ const Play = () => {
   const [currentPage, setCurrentPage] = React.useState(0); 
   const [questions, setQuestions] = React.useState<questions[]>([]);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
+  const [showStart, setShowStart] = React.useState(true);
 
   const fetchData = async () => {
     fetchDBQuestionsNoSearch().then((questions) => {
       setQuestions(questions)
-      console.log(questions)
+      setShowStart(false)
+      setCurrentQuestion(questions[0])
     })
   }
-
 
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
@@ -145,9 +144,9 @@ const Play = () => {
 
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
-        { true ?  <CustomButton 
+        { showStart ?  <CustomButton 
           title="Start"
-          handlePress={() => {}}
+          handlePress={() => {fetchData()}}
           containerStyles='bg-tertiary'
         /> : <FlatList
           data={questions}
