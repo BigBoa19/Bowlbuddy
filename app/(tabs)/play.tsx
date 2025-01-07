@@ -22,9 +22,9 @@ const Play = () => {
   const [showStart, setShowStart] = React.useState(true);
 
   const fetchData = async () => {
+    setShowStart(false)
     fetchDBQuestionsNoSearch().then((questions) => {
       setQuestions(questions)
-      setShowStart(false)
       setCurrentQuestion(questions[0])
     })
   }
@@ -100,8 +100,6 @@ const Play = () => {
       console.log(error);
     }
   }
-
-
 
   const onBuzz = () =>{
     setAnimating(true)
