@@ -20,9 +20,17 @@ const Play = () => {
   const [questions, setQuestions] = React.useState<questions[]>([]);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const [showStart, setShowStart] = React.useState(true);
+  const scaleValue = React.useRef(new Animated.Value(1)).current;
 
   const fetchData = async () => {
-    setShowStart(false)
+    Animated.timing(scaleValue, {
+      toValue: 0, // Scale up to x times the original size
+      duration: 200, // Animation duration in milliseconds
+      useNativeDriver: true, // Use native driver for better performance
+    }).start(() => {
+      setShowStart(false);
+    });
+    //scaleValue.setValue(1);
     fetchDBQuestionsNoSearch().then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
@@ -142,11 +150,11 @@ const Play = () => {
 
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
-        { showStart ?  <CustomButton 
+        { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}><CustomButton 
           title="Start"
           handlePress={() => {fetchData()}}
           containerStyles='bg-tertiary'
-        /> : <FlatList
+        /></Animated.View> : <FlatList
           data={questions}
           keyExtractor={item => item._id}
           renderItem={({item}) => (

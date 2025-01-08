@@ -4,6 +4,8 @@ import React, { useEffect } from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
 import { BuzzCircleContext, QuestionContext } from '../context';
+import { Audio } from 'expo-av';
+
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -36,14 +38,33 @@ export default function TabsLayout() {
     const [ inputAnswer, setInputAnswer ] = React.useState('')
     const [ started, setStarted ] = React.useState(false);
     const [ results, setResults ] = React.useState([]);
-    const [ checkTrue, setCheckTrue ] = React.useState(false);
-    const [ checkFalse, setCheckFalse ] = React.useState(false);
+    const themeValue = React.useRef(new Animated.Value(0)).current;
+
+    const playSound = async (checkRight:boolean) => {
+      const soundPath = checkRight 
+        ? require('../../assets/audio/right-answer.mp3') 
+        : require('../../assets/audio/wrong-answer.mp3');
+      const { sound } = await Audio.Sound.createAsync(soundPath);
+      if(checkRight){
+        await sound.setRateAsync(2.0, true);
+      }
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
+    }
     const onBuzzClose = () => {
       scaleValue.setValue(0);
       setAnimating(false);
       setBuzzModal(false);
-      setCheckFalse(false); setCheckTrue(false);
     }
+
+    const [ backgroundColor, setBackgroundColor] = React.useState(themeValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
+    }))
 
     React.useEffect(() => {
       Voice.onSpeechError = onSpeechError;
@@ -74,19 +95,35 @@ export default function TabsLayout() {
     };
     
     const checkAnswer = (answer:string) =>{
-      setCheckTrue(false);
-      setCheckFalse(false);
-      if(currentQuestion.answer_sanitized.toLowerCase().includes(answer.toLowerCase()) && answer!='' && answer!=' '){
-        setCheckTrue(true);
+      if(currentQuestion.answer_sanitized.toLowerCase().includes(answer.toLowerCase())  && answer!= '' && answer!=' '){
+        playSound(true)
       }
       else{
-        setCheckFalse(true);
+        playSound(false);
+        setBackgroundColor(themeValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["#8a92eb", "#b30000"], // Secondary to Red
+        }))
       }
+      Animated.timing(themeValue, {
+        toValue: 1,
+        duration:100,
+        useNativeDriver:true
+      }).start(()=>{
+        setTimeout(()=>{},)
+        Animated.timing(themeValue, {
+          toValue:0,
+          duration:1000,
+          useNativeDriver:true
+        }).start(()=>{
+          onBuzzClose()
+        })
+      })
     }
 
     return (
       <View className='flex-1 bg-primary'>
-        <SafeAreaView className='flex-1 items-center justify-center bg-secondary'>
+        <Animated.View className='flex-1 items-center justify-center' style = {{backgroundColor:backgroundColor}}>
           <Text className='text-white text-3xl'>
               BuzzScreen
           </Text>
@@ -106,9 +143,7 @@ export default function TabsLayout() {
           <TouchableOpacity onPress={onBuzzClose}>
             <Text className=' text-white text-3xl'>Close</Text>
           </TouchableOpacity>
-          { checkTrue && <Text className='text-2xl text-green-300'>Correct!</Text> }
-          { checkFalse && <Text className='text-2xl text-red-500'>Incorrect!</Text> }
-        </SafeAreaView>
+        </Animated.View>
       </View>
     )
   }
@@ -227,7 +262,8 @@ export default function TabsLayout() {
           options={{ 
             href: null, 
             headerShown:false,
-            tabBarStyle: { display: 'none' }
+            tabBarStyle: { display: 'none' },
+            animation:'shift'
           }} 
         />
       </Tabs>
