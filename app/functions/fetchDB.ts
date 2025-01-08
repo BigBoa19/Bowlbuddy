@@ -20,3 +20,12 @@ export const fetchDBQuestionsNoSearch = async (): Promise<questions[]> => {
 
     return questions;
 }
+
+export const verifyAnswer = async (answerline:string, givenAnswer:string) => {
+    const url = new URL(`https://qbreader.org/api/check-answer?answerline=${answerline}&givenAnswer=${givenAnswer}`);
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    return data;
+}

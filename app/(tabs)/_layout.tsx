@@ -5,7 +5,7 @@ import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
 import { BuzzCircleContext, QuestionContext } from '../context';
 import { Audio } from 'expo-av';
-
+import { verifyAnswer } from '../functions/fetchDB'
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -32,8 +32,6 @@ export default function TabsLayout() {
   const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [ buzzModal, setBuzzModal ] = React.useState(false)
 
-  
-
   const BuzzScreen = () => {
     const [ inputAnswer, setInputAnswer ] = React.useState('')
     const [ started, setStarted ] = React.useState(false);
@@ -55,6 +53,7 @@ export default function TabsLayout() {
         }
       });
     }
+
     const onBuzzClose = () => {
       scaleValue.setValue(0);
       setAnimating(false);
@@ -94,11 +93,18 @@ export default function TabsLayout() {
       console.log(error);
     };
     
-    const checkAnswer = (answer:string) =>{
-      if(currentQuestion.answer_sanitized.toLowerCase().includes(answer.toLowerCase())  && answer!= '' && answer!=' '){
+    const checkAnswer = async (inputAnswer:string) =>{
+      console.log(currentQuestion.answer)
+      const response = await verifyAnswer(currentQuestion.answer, inputAnswer);
+      console.log(response)
+      if(response.directedPrompt){
+        //whatever
+      }
+
+      if(response.directive=='accept'){
         playSound(true)
       }
-      else{
+      else if(response.directive=='reject'){
         playSound(false);
         setBackgroundColor(themeValue.interpolate({
           inputRange: [0, 1],
