@@ -193,9 +193,6 @@ const Play = () => {
         <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onBuzz()}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>appendQuestion()}>
-          <Text className="text-2xl font-gBlack text-red-500">Load</Text>
-        </TouchableOpacity>
         {/* Saved icon */}
         <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={ () => handleSave(questions[currentPage]) }>
           <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
