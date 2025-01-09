@@ -16,7 +16,7 @@ export const fetchDBQuestions = async (queryString: string): Promise<questions[]
 export const fetchDBQuestionsNoSearch = async (): Promise<questions[]> => {
     const response = await fetch(`https://www.qbreader.org/api/query?difficulties=3&randomize=true`);
     const data = await response.json();
-    const questions = data.tossups.questionArray.slice(0, 10);
+    const questions = data.tossups.questionArray.slice(0, 5);
 
     return questions;
 }
@@ -28,4 +28,10 @@ export const verifyAnswer = async (answerline:string, givenAnswer:string) => {
     const data = await response.json();
 
     return data;
+}
+export const fetchRandomQuestion = async (): Promise<questions> => {
+    const response = await fetch("https://www.qbreader.org/api/random-tossup")
+    const data = await response.json();
+    const [question] = data.tossups;
+    return question;
 }

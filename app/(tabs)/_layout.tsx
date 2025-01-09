@@ -7,6 +7,7 @@ import { BuzzCircleContext, QuestionContext } from '../context';
 import { Audio } from 'expo-av';
 import { verifyAnswer } from '../functions/fetchDB'
 
+
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
     <View className='items-center justify-center gap-1 ' style={{ paddingTop: 20 }}>
@@ -27,7 +28,7 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 }
 
 export default function TabsLayout() {
-  const { currentQuestion, setCurrentQuestion } = React.useContext(QuestionContext);
+  const { currentQuestion } = React.useContext(QuestionContext);
   const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
   const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [ buzzModal, setBuzzModal ] = React.useState(false)

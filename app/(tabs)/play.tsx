@@ -2,8 +2,8 @@ import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, F
 import React from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
-import TextAnimator from '../components/TextAnimator'
-import { questions, fetchDBQuestionsNoSearch } from '../functions/fetchDB'
+import FocusedTextAnimator from '../components/TextAnimator'
+import { questions, fetchDBQuestionsNoSearch, fetchRandomQuestion } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
@@ -21,6 +21,8 @@ const Play = () => {
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const [showStart, setShowStart] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
+  const [listKey, setListKey] = React.useState(0);
+
 
   const fetchData = async () => {
     Animated.timing(scaleValue, {
@@ -37,9 +39,23 @@ const Play = () => {
     })
   }
 
+  React.useEffect(() => {
+    console.log("Updated Questions:", JSON.stringify(questions, null, 2));
+    setListKey(listKey + 1);
+  }, [questions]);
+
+  const appendQuestion = async () => {
+    const newQuestion = await fetchRandomQuestion();
+    console.log("New Question:", JSON.stringify(newQuestion, null, 2));
+
+    setQuestions((questions) => {
+      return [...questions, newQuestion];
+    });
+  }
+
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-    const page = Math.round(offsetY / height); 
+    const page = Math.round(offsetY / height);
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
   };
@@ -109,9 +125,7 @@ const Play = () => {
     }
   }
 
-  const onBuzz = () =>{
-    setAnimating(true)
-  }
+  const onBuzz = () => setAnimating(true)
 
   return (
     <SafeAreaView className='bg-background flex-1'>
@@ -155,11 +169,13 @@ const Play = () => {
           handlePress={() => {fetchData()}}
           containerStyles='bg-tertiary'
         /></Animated.View> : <FlatList
+          key={listKey}
           data={questions}
+          extraData={questions} 
           keyExtractor={item => item._id}
           renderItem={({item}) => (
-            <View className="flex-1" style={{height: height}}>
-              {/* <TextAnimator 
+            <View className="flex-1">
+              {/* <FocusedTextAnimator 
                 sentence={item.question_sanitized} 
                 height={height} 
                 page={currentPage} 
@@ -168,14 +184,16 @@ const Play = () => {
               <Text className='text-sm text-secondary text-left font-gBook'>{item.question_sanitized}</Text>
             </View>
           )}
-          pagingEnabled={true}
+          //pagingEnabled={true}
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           showsVerticalScrollIndicator={false}
-          onScroll={handleScroll}
-          className='flex-1'
+          //onScroll={handleScroll}
+          ListFooterComponent={() => (
+            <Text onPress={appendQuestion} className='text-sm text-secondary text-left font-gBook'>Load More</Text>
+          )
+          }
         />}
-        
-       
+         
       </View>
 
       {/* Buttons */}
@@ -190,7 +208,9 @@ const Play = () => {
         <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>onBuzz()}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
-        {/* Circle Modal */}
+        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={()=>appendQuestion()}>
+          <Text className="text-2xl font-gBlack text-red-500">Load</Text>
+        </TouchableOpacity>
         {/* Saved icon */}
         <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={ () => handleSave(questions[currentPage]) }>
           <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
@@ -199,7 +219,5 @@ const Play = () => {
     </SafeAreaView>
   )
 }
-
-
 
 export default Play
