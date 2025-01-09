@@ -21,8 +21,6 @@ const Play = () => {
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const [showStart, setShowStart] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
-  const [listKey, setListKey] = React.useState(0);
-
 
   const fetchData = async () => {
     Animated.timing(scaleValue, {
@@ -32,25 +30,16 @@ const Play = () => {
     }).start(() => {
       setShowStart(false);
     });
-    //scaleValue.setValue(1);
+
     fetchDBQuestionsNoSearch().then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
     })
   }
 
-  React.useEffect(() => {
-    console.log("Updated Questions:", JSON.stringify(questions, null, 2));
-    setListKey(listKey + 1);
-  }, [questions]);
-
   const appendQuestion = async () => {
     const newQuestion = await fetchRandomQuestion();
-    console.log("New Question:", JSON.stringify(newQuestion, null, 2));
-
-    setQuestions((questions) => {
-      return [...questions, newQuestion];
-    });
+    setQuestions([...questions, newQuestion]);
   }
 
   const handleScroll = (event: any) => {
@@ -169,29 +158,25 @@ const Play = () => {
           handlePress={() => {fetchData()}}
           containerStyles='bg-tertiary'
         /></Animated.View> : <FlatList
-          key={listKey}
           data={questions}
-          extraData={questions} 
-          keyExtractor={item => item._id}
+          keyExtractor={(item, index) => `${item._id}-${index}`}
           renderItem={({item}) => (
-            <View className="flex-1">
+            <View>
               {/* <FocusedTextAnimator 
                 sentence={item.question_sanitized} 
                 height={height} 
                 page={currentPage} 
                 paused={paused}
               /> */}
-              <Text className='text-sm text-secondary text-left font-gBook'>{item.question_sanitized}</Text>
+              <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text>
             </View>
           )}
-          //pagingEnabled={true}
+          pagingEnabled={true}
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           showsVerticalScrollIndicator={false}
-          //onScroll={handleScroll}
-          ListFooterComponent={() => (
-            <Text onPress={appendQuestion} className='text-sm text-secondary text-left font-gBook'>Load More</Text>
-          )
-          }
+          onScroll={handleScroll}
+          onEndReached={appendQuestion}
+          onEndReachedThreshold={1}
         />}
          
       </View>
