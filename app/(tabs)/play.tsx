@@ -3,7 +3,7 @@ import React from 'react'
 import icons from '@/constants/icons'
 import CustomButton from '../components/CustomButton'
 import FocusedTextAnimator from '../components/TextAnimator'
-import { questions, fetchDBQuestionsNoSearch, fetchRandomQuestion } from '../functions/fetchDB'
+import { questions, fetchDBQuestionsNoSearch, fetchRandomQuestion, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
@@ -22,6 +22,15 @@ const Play = () => {
   const [showStart, setShowStart] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
 
+ // const [queryString, setQueryString] = React.useState<string | undefined>(undefined);
+  const [difficulties, setDifficulties] = React.useState<number[] | undefined>(undefined);
+  const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
+  const [questionType, setQuestionType] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(()=>{
+    console.log("[diff, cat]:", [difficulties, categories])
+  },[difficulties, categories])
+
   const fetchData = async () => {
     Animated.timing(scaleValue, {
       toValue: 0, // Scale up to x times the original size
@@ -31,15 +40,15 @@ const Play = () => {
       setShowStart(false);
     });
 
-    fetchDBQuestionsNoSearch().then((questions) => {
+    fetchDBQuestions({queryString:undefined, difficulties: difficulties, categories: categories, questionType: questionType }).then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
     })
   }
 
   const appendQuestion = async () => {
-    const newQuestion = await fetchRandomQuestion();
-    setQuestions([...questions, newQuestion]);
+    const newQuestion = await fetchDBQuestions({queryString:undefined, difficulties: difficulties, categories: categories, questionType: questionType })
+    setQuestions([...questions, newQuestion[0]]);
   }
 
   const handleScroll = (event: any) => {
@@ -56,18 +65,18 @@ const Play = () => {
           <Text className='text-tertiary text-2xl font-gBold pb-3'>Settings</Text>
           <Text className='text-tertiary text-xl font-gBold'>Level</Text>
           <View className='flex-row justify-between'>
-            <CustomButton title='MS' handlePress={() => {}} containerStyles='mt-2 mr-2' />
-            <CustomButton title='HS' handlePress={() => {}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='College' handlePress={() => {}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Open' handlePress={() => {}} containerStyles='mt-2 ml-2' />
+            <CustomButton title='MS' handlePress={() => {setDifficulties([1])}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='HS' handlePress={() => {setDifficulties([2,3,4,5])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='College' handlePress={() => {setDifficulties([6,7,8,9])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Open' handlePress={() => {setDifficulties([10])}} containerStyles='mt-2 ml-2' />
           </View>
           <Text className='text-tertiary text-xl font-gBold py-2'>Category</Text>
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="flex-row">
-            <CustomButton title='Science' handlePress={() => {}} containerStyles='mt-2 mr-2' />
-            <CustomButton title='History' handlePress={() => {}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Fine Arts' handlePress={() => {}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Literature' handlePress={() => {}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Mythology' handlePress={() => {}} containerStyles='mt-2 ml-2' />
+            <CustomButton title='Science' handlePress={() => {setCategories(["Science"])}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='History' handlePress={() => {setCategories(["History"])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Fine Arts' handlePress={() => {setCategories(["Fine Arts"])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Literature' handlePress={() => {setCategories(["Literature"])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Mythology' handlePress={() => {setCategories(["Mythology"])}} containerStyles='mt-2 ml-2' />
           </ScrollView>
           <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
           <View className='flex-row justify-between'>
@@ -168,6 +177,7 @@ const Play = () => {
                 page={currentPage} 
                 paused={paused}
               /> */}
+              {/* <Text>{item.question}</Text> */}
               <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text>
             </View>
           )}

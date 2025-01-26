@@ -6,10 +6,27 @@ export interface questions {
     answer_sanitized: string;
 }
 
-export const fetchDBQuestions = async (queryString: string): Promise<questions[]> => {
-    const response = await fetch(`https://qbreader.org/api/query?queryString=${queryString}&randomize=true`);
+export const fetchDBQuestions = async ({queryString, difficulties, categories, questionType}:any ): Promise<questions[]> => {
+    // const response = await fetch(`https://qbreader.org/api/query?queryString=
+        // ${queryString}&
+        // ${difficulties}&
+        // ${categories}&
+        // ${questionType}
+    // &randomize=true`);
+    let url = `https://qbreader.org/api/query?randomize=true`
+    if(difficulties !== undefined){
+        url += `&difficulties=${difficulties}`;
+    }
+    if(categories !== undefined){
+        url += `&categories=${categories}`;
+    }
+    if(questionType !== undefined){
+        url += `&questionType=${questionType}`;
+    }
+    console.log(url)
+    const response = await fetch(url);
     const data = await response.json();
-    const questions = data.tossups.questionArray.slice(0, 10);
+    const questions = data.tossups.questionArray.slice(0, 1);
     return questions;
 }
 
