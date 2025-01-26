@@ -38,6 +38,24 @@ export default function TabsLayout() {
     const [ started, setStarted ] = React.useState(false);
     const [ results, setResults ] = React.useState([]);
     const themeValue = React.useRef(new Animated.Value(0)).current;
+    const [ backgroundColor, setBackgroundColor] = React.useState(themeValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
+    }))
+
+    const widthValue = React.useRef(new Animated.Value(0)).current;
+    const [barColor, setBarColor] = React.useState(widthValue.interpolate({
+      inputRange: [0,330],
+      outputRange: ["#66ff00", "#ee4b2b"]
+    }))
+
+    React.useEffect(()=>{
+      Animated.timing(widthValue, {
+        toValue: 330,
+        duration: 10000,
+        useNativeDriver: false
+      }).start();
+    },[])
 
     const playSound = async (checkRight:boolean) => {
       const soundPath = checkRight 
@@ -60,11 +78,6 @@ export default function TabsLayout() {
       setAnimating(false);
       setBuzzModal(false);
     }
-
-    const [ backgroundColor, setBackgroundColor] = React.useState(themeValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
-    }))
 
     React.useEffect(() => {
       Voice.onSpeechError = onSpeechError;
@@ -120,7 +133,7 @@ export default function TabsLayout() {
         setTimeout(()=>{},)
         Animated.timing(themeValue, {
           toValue:0,
-          duration:1000,
+          duration:500,
           useNativeDriver:true
         }).start(()=>{
           onBuzzClose()
@@ -129,27 +142,39 @@ export default function TabsLayout() {
     }
 
     return (
-      <View className='flex-1 bg-primary'>
-        <Animated.View className='flex-1 items-center justify-center' style = {{backgroundColor:backgroundColor}}>
-          <Text className='text-white text-3xl'>
+      <View className='flex-1 bg-secondary'>
+        <Animated.View className='flex-1 justify-center' style = {{backgroundColor:backgroundColor}}>
+          {/* Bar + BuzzScreen Text */}
+          <View className='flex-1 justify-between mt-9 mx-9'>
+            {/* Bar */}
+            <Animated.View className='border-2 p-3 rounded-full mt-16 shadow-lg' style={{width:widthValue, backgroundColor:barColor}}></Animated.View>
+
+            <Text className='text-white text-3xl text-center'>
               BuzzScreen
-          </Text>
-          <Text className='text-s text-red-200'>Answer: {currentQuestion.answer_sanitized}</Text>
-          {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
-          {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
-          {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}
-          <TextInput
-            value={inputAnswer}
-            placeholder='Answer Here'
-            onChangeText={(e) => setInputAnswer(e)}
-            className='flex-row w-96 border-2 p-2 rounded-lg'
-          />
-          <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>checkAnswer(inputAnswer)}>
-            <Text className='font-gBold'>Submit Answer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onBuzzClose}>
-            <Text className=' text-white text-3xl'>Close</Text>
-          </TouchableOpacity>
+            </Text>
+          </View>
+          
+          {/* Rest of it */}
+          <View className='flex-1 items-center justify-center'>
+            <Text className='text-s text-red-200'>Answer: {currentQuestion.answer_sanitized}</Text>
+            {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
+            {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
+            {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}
+            <TextInput
+              value={inputAnswer}
+              placeholder='Answer Here'
+              onChangeText={(e) => setInputAnswer(e)}
+              className='flex-row w-96 border-2 p-2 rounded-lg'
+            />
+            <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>checkAnswer(inputAnswer)}>
+              <Text className='font-gBold'>Submit Answer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onBuzzClose}>
+              <Text className=' text-white text-3xl'>Close</Text>
+            </TouchableOpacity>
+          </View>
+          {/* Filler View */}
+          <View className='flex-1'></View>
         </Animated.View>
       </View>
     )
