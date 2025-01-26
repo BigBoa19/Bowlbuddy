@@ -43,19 +43,44 @@ export default function TabsLayout() {
       outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
     }))
 
-    const shiftValue = React.useRef(new Animated.Value(-316)).current;
+    const shiftValue = React.useRef(new Animated.Value(-350)).current;
     const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
-      inputRange: [-316, -158, 0], // Three stops: start, middle, end
+      inputRange: [-350, -150, 0], // Three stops: start, middle, end
       outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
     }))
 
-    React.useEffect(()=>{
-      Animated.timing(shiftValue, {
+    const isAnswerChecked = React.useRef(false); // Track if checkAnswer has been called
+    const isMounted = React.useRef(true); // Track if the component is mounted
+    const animationRef = React.useRef<Animated.CompositeAnimation | null>(null);
+    
+    React.useEffect(() => {
+      console.log('Starting animation'); // Debugging
+      isAnswerChecked.current = false; // Reset the guard
+  
+      animationRef.current = Animated.timing(shiftValue, {
         toValue: 0,
         duration: 10000,
-        useNativeDriver: true
-      }).start();
-    },[])
+        useNativeDriver: true,
+      });
+  
+      animationRef.current.start(({ finished }) => {
+        if (finished && !isAnswerChecked.current && isMounted.current) {
+          // console.log('Animation completed'); // Debugging
+          isAnswerChecked.current = true;
+          console.log(inputAnswer)
+          checkAnswer(inputAnswer);
+        }
+      });
+  
+      // Cleanup function to stop the animation on unmount
+      return () => {
+        // console.log('Cleaning up animation'); // Debugging
+        isMounted.current = false; // Mark component as unmounted
+        if (animationRef.current) {
+          animationRef.current.stop(); // Stop the animation
+        }
+      };
+    }, []);
 
     const playSound = async (checkRight:boolean) => {
       const soundPath = checkRight 
@@ -108,6 +133,7 @@ export default function TabsLayout() {
     };
     
     const checkAnswer = async (inputAnswer:string) =>{
+      shiftValue.stopAnimation();
       console.log(currentQuestion.answer)
       const response = await verifyAnswer(currentQuestion.answer, inputAnswer);
       console.log(response)
