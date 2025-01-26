@@ -43,15 +43,15 @@ export default function TabsLayout() {
       outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
     }))
 
-    const widthValue = React.useRef(new Animated.Value(0)).current;
-    const [barColor, setBarColor] = React.useState(widthValue.interpolate({
-      inputRange: [0,1],
-      outputRange: ["#66ff00", "#ee4b2b"]
+    const shiftValue = React.useRef(new Animated.Value(-316)).current;
+    const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
+      inputRange: [-316, -158, 0], // Three stops: start, middle, end
+      outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
     }))
 
     React.useEffect(()=>{
-      Animated.timing(widthValue, {
-        toValue: 1,
+      Animated.timing(shiftValue, {
+        toValue: 0,
         duration: 10000,
         useNativeDriver: true
       }).start();
@@ -149,16 +149,16 @@ export default function TabsLayout() {
           <View className='flex-1 justify-between mt-9 mx-9'>
             {/* Bar */}
             {/* <Animated.View className='border-2 p-3 rounded-full mt-16 shadow-lg' style={{
-                transform:[{scaleX:widthValue}], backgroundColor:barColor
+                transform:[{scaleX:shiftValue}], backgroundColor:barColor
                 }}>
             </Animated.View> */}
-            <View className='shadow-lg'>
+            <View className='shadow-lg shadow-gray-700'>
               <View className='w-full h-6 bg-gray-500 rounded-full overflow-hidden mt-16'>
               {/* Animated Progress Bar */}
                 <Animated.View
-                  className='h-full'
+                  className='h-full rounded-full shadow-lg shadow-gray-900'
                   style={{
-                    transform: [{ scaleX: widthValue }],
+                    transform: [{ translateX:shiftValue }],
                     backgroundColor: barColor,
                     width: '100%', // Set the initial width to 100%
                     transformOrigin: 'left', // Ensure scaling starts from the left
