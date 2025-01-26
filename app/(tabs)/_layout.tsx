@@ -45,15 +45,15 @@ export default function TabsLayout() {
 
     const widthValue = React.useRef(new Animated.Value(0)).current;
     const [barColor, setBarColor] = React.useState(widthValue.interpolate({
-      inputRange: [0,330],
+      inputRange: [0,1],
       outputRange: ["#66ff00", "#ee4b2b"]
     }))
 
     React.useEffect(()=>{
       Animated.timing(widthValue, {
-        toValue: 330,
+        toValue: 1,
         duration: 10000,
-        useNativeDriver: false
+        useNativeDriver: true
       }).start();
     },[])
 
@@ -140,6 +140,7 @@ export default function TabsLayout() {
         })
       })
     }
+    
 
     return (
       <View className='flex-1 bg-secondary'>
@@ -147,7 +148,24 @@ export default function TabsLayout() {
           {/* Bar + BuzzScreen Text */}
           <View className='flex-1 justify-between mt-9 mx-9'>
             {/* Bar */}
-            <Animated.View className='border-2 p-3 rounded-full mt-16 shadow-lg' style={{width:widthValue, backgroundColor:barColor}}></Animated.View>
+            {/* <Animated.View className='border-2 p-3 rounded-full mt-16 shadow-lg' style={{
+                transform:[{scaleX:widthValue}], backgroundColor:barColor
+                }}>
+            </Animated.View> */}
+            <View className='shadow-lg'>
+              <View className='w-full h-6 bg-gray-500 rounded-full overflow-hidden mt-16'>
+              {/* Animated Progress Bar */}
+                <Animated.View
+                  className='h-full'
+                  style={{
+                    transform: [{ scaleX: widthValue }],
+                    backgroundColor: barColor,
+                    width: '100%', // Set the initial width to 100%
+                    transformOrigin: 'left', // Ensure scaling starts from the left
+                  }}
+                />
+              </View>
+            </View>
 
             <Text className='text-white text-3xl text-center'>
               BuzzScreen
