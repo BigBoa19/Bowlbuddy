@@ -5,8 +5,8 @@ import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
 import { BuzzCircleContext, QuestionContext } from '../context';
 import { Audio } from 'expo-av';
-import { verifyAnswer } from '../functions/fetchDB'
-
+// @ts-ignore
+import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js"
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -59,7 +59,7 @@ export default function TabsLayout() {
   
       animationRef.current = Animated.timing(shiftValue, {
         toValue: 0,
-        duration: 10000,
+        duration: 30000,
         useNativeDriver: true,
       });
   
@@ -68,7 +68,7 @@ export default function TabsLayout() {
           // console.log('Animation completed'); // Debugging
           isAnswerChecked.current = true;
           console.log(inputAnswer)
-          checkAnswer(inputAnswer);
+          startAnswerCheck(inputAnswer);
         }
       });
   
@@ -132,13 +132,13 @@ export default function TabsLayout() {
       console.log(error);
     };
     
-    const checkAnswer = async (inputAnswer:string) =>{
+    const startAnswerCheck = (inputAnswer:string) =>{
       shiftValue.stopAnimation();
       console.log(currentQuestion.answer)
-      const response = await verifyAnswer(currentQuestion.answer, inputAnswer);
-      console.log(response)
-      if(response.directedPrompt){
-        //whatever
+      const response = checkAnswer(currentQuestion.answer, inputAnswer);
+      console.log("Response: ", response.directive)
+      if(response.directedPrompt){ //if answer is prompt
+        //code for prompt
       }
 
       if(response.directive=='accept'){
@@ -210,7 +210,7 @@ export default function TabsLayout() {
               onChangeText={(e) => setInputAnswer(e)}
               className='flex-row w-96 border-2 p-2 rounded-lg'
             />
-            <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>checkAnswer(inputAnswer)}>
+            <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>startAnswerCheck(inputAnswer)}>
               <Text className='font-gBold'>Submit Answer</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onBuzzClose}>
