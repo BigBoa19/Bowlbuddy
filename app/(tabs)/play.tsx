@@ -22,6 +22,8 @@ const Play = () => {
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const [showStart, setShowStart] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const scrollPosition = React.useRef(0);
 
  // const [queryString, setQueryString] = React.useState<string | undefined>(undefined);
   const [difficulties, setDifficulties] = React.useState<number[] | undefined>(undefined);
@@ -78,6 +80,7 @@ const Play = () => {
         ...(prevDifficulties || []), // Preserve existing difficulties
         ...diffArray, // Add new difficulties
       ]);
+  
     }
 
     if(diffArray.includes(1)){ setToggleDifficulties({...toggleDifficulties, ms: !toggleDifficulties.ms}); }
@@ -106,10 +109,18 @@ const Play = () => {
     else if(catArray.includes("Fine Arts")) {setToggleCategories({...toggleCategories, finearts: !toggleCategories.finearts});}
     else if(catArray.includes("Literature")) {setToggleCategories({...toggleCategories, literature: !toggleCategories.literature});}
     else {setToggleCategories({...toggleCategories, mythology: !toggleCategories.mythology});}
+
+    
+    scrollViewRef.current?.scrollTo({ x: scrollPosition.current, animated: false });
   }
+  React.useEffect(() => {
+    console.log("Scroll Pos: ", scrollPosition.current)
+    scrollViewRef.current?.scrollTo({ x: scrollPosition.current, animated: false });
+  }, [scrollPosition.current]);
 
 
   const SettingsModal = () => {
+    const MemoizedCustomButton = React.memo(CustomButton);
     return (
       <View className='flex-1 justify-center p-4'>
         <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
@@ -122,12 +133,17 @@ const Play = () => {
             <CustomButton title='Open' isActive={toggleDifficulties.open} handlePress={() => {handleDifficultyPress([10]);}} containerStyles='mt-2 ml-2' />
           </View>
           <Text className='text-tertiary text-xl font-gBold py-2'>Category</Text>
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="flex-row">
-            <CustomButton title='Science' isActive={toggleCategories.science} handlePress={() => {handleCategoryPress(["Science"])}} containerStyles='mt-2 mr-2' />
-            <CustomButton title='History' isActive={toggleCategories.history} handlePress={() => {handleCategoryPress(["History"])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Fine Arts' isActive={toggleCategories.finearts} handlePress={() => {handleCategoryPress(["Fine Arts"])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Literature' isActive={toggleCategories.literature} handlePress={() => {handleCategoryPress(["Literature"])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Mythology' isActive={toggleCategories.mythology} handlePress={() => {handleCategoryPress(["Mythology"])}} containerStyles='mt-2 ml-2' />
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="flex-row"
+            ref={scrollViewRef}
+            onScroll={(event) => {
+              scrollPosition.current = event.nativeEvent.contentOffset.x;
+            }}
+            scrollEventThrottle={16}>
+            <MemoizedCustomButton title='Science' isActive={toggleCategories.science} handlePress={() => {handleCategoryPress(["Science"])}} containerStyles='mt-2 mr-2' />
+            <MemoizedCustomButton title='History' isActive={toggleCategories.history} handlePress={() => {handleCategoryPress(["History"])}} containerStyles='mt-2 mx-2' />
+            <MemoizedCustomButton title='Fine Arts' isActive={toggleCategories.finearts} handlePress={() => {handleCategoryPress(["Fine Arts"])}} containerStyles='mt-2 mx-2' />
+            <MemoizedCustomButton title='Literature' isActive={toggleCategories.literature} handlePress={() => {handleCategoryPress(["Literature"])}} containerStyles='mt-2 mx-2' />
+            <MemoizedCustomButton title='Mythology' isActive={toggleCategories.mythology} handlePress={() => {handleCategoryPress(["Mythology"])}} containerStyles='mt-2 ml-2' />
           </ScrollView>
           <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
           <View className='flex-row justify-between'>

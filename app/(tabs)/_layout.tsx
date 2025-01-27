@@ -1,6 +1,6 @@
 import { View, Text, Image, Animated, SafeAreaView, Button, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
 import { BuzzCircleContext, QuestionContext } from '../context';
