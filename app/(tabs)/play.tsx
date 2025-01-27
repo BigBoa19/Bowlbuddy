@@ -9,6 +9,7 @@ import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext } from '../context';
 import Slider from '@react-native-community/slider'
+import { setShouldAnimateExitingForTag } from 'react-native-reanimated/lib/typescript/core'
 
 const Play = () => {
   const { setAnimating } = React.useContext(BuzzCircleContext);
@@ -24,10 +25,16 @@ const Play = () => {
 
  // const [queryString, setQueryString] = React.useState<string | undefined>(undefined);
   const [difficulties, setDifficulties] = React.useState<number[] | undefined>(undefined);
+  const [toggleDifficulties, setToggleDifficulties] = React.useState({ms:false, hs:false, college:false, open:false})
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
+  const [toggleCategories, setToggleCategories] = React.useState({science:false, history:false, finearts:false, literature:false, mythology:false})
+
   const [questionType, setQuestionType] = React.useState<string | undefined>(undefined);
 
   React.useEffect(()=>{
+    if (difficulties && difficulties.length === 0) {
+      setDifficulties(undefined); // Set to undefined if the array is empty
+    }
     console.log("[diff, cat]:", [difficulties, categories])
   },[difficulties, categories])
 
@@ -58,6 +65,50 @@ const Play = () => {
     setCurrentQuestion(questions[currentPage])
   };
 
+  const handleDifficultyPress = (diffArray:number[]) => {
+    const isAnyDifficultyActive = diffArray.some(d => difficulties?.includes(d));
+    if (isAnyDifficultyActive) {
+      // Remove all difficulties in diffArray from the difficulties array
+      setDifficulties(prevDifficulties =>
+        prevDifficulties?.filter(d => !diffArray.includes(d))
+      );
+    } else {
+      // Add all difficulties in diffArray to the difficulties array
+      setDifficulties(prevDifficulties => [
+        ...(prevDifficulties || []), // Preserve existing difficulties
+        ...diffArray, // Add new difficulties
+      ]);
+    }
+
+    if(diffArray.includes(1)){ setToggleDifficulties({...toggleDifficulties, ms: !toggleDifficulties.ms}); }
+    else if(diffArray.includes(2)) {setToggleDifficulties({...toggleDifficulties, hs: !toggleDifficulties.hs});}
+    else if(diffArray.includes(6)) {setToggleDifficulties({...toggleDifficulties, college: !toggleDifficulties.college});}
+    else {setToggleDifficulties({...toggleDifficulties, open: !toggleDifficulties.open});}
+  }
+
+  const handleCategoryPress = (catArray:string[]) => {
+    const isAnyCategoryActive = catArray.some(c => categories?.includes(c));
+    if (isAnyCategoryActive) {
+      // Remove all categories in catArray from the categories array
+      setCategories(prevCategories =>
+        prevCategories?.filter(c => !catArray.includes(c))
+      );
+    } else {
+      // Add all categories in catArray to the categories array
+      setCategories(prevCategories => [
+        ...(prevCategories || []), // Preserve existing categories
+        ...catArray, // Add new categories
+      ]);
+    }
+
+    if(catArray.includes("Science")){ setToggleCategories({...toggleCategories, science: !toggleCategories.science}); }
+    else if(catArray.includes("History")) {setToggleCategories({...toggleCategories, history: !toggleCategories.history});}
+    else if(catArray.includes("Fine Arts")) {setToggleCategories({...toggleCategories, finearts: !toggleCategories.finearts});}
+    else if(catArray.includes("Literature")) {setToggleCategories({...toggleCategories, literature: !toggleCategories.literature});}
+    else {setToggleCategories({...toggleCategories, mythology: !toggleCategories.mythology});}
+  }
+
+
   const SettingsModal = () => {
     return (
       <View className='flex-1 justify-center p-4'>
@@ -65,18 +116,18 @@ const Play = () => {
           <Text className='text-tertiary text-2xl font-gBold pb-3'>Settings</Text>
           <Text className='text-tertiary text-xl font-gBold'>Level</Text>
           <View className='flex-row justify-between'>
-            <CustomButton title='MS' handlePress={() => {setDifficulties([1])}} containerStyles='mt-2 mr-2' />
-            <CustomButton title='HS' handlePress={() => {setDifficulties([2,3,4,5])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='College' handlePress={() => {setDifficulties([6,7,8,9])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Open' handlePress={() => {setDifficulties([10])}} containerStyles='mt-2 ml-2' />
+            <CustomButton title='MS' isActive={toggleDifficulties.ms} handlePress={() => {handleDifficultyPress([1]);}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='HS' isActive={toggleDifficulties.hs} handlePress={() => {handleDifficultyPress([2,3,4,5]);}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='College' isActive={toggleDifficulties.college} handlePress={() => {handleDifficultyPress([6,7,8,9]);}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Open' isActive={toggleDifficulties.open} handlePress={() => {handleDifficultyPress([10]);}} containerStyles='mt-2 ml-2' />
           </View>
           <Text className='text-tertiary text-xl font-gBold py-2'>Category</Text>
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="flex-row">
-            <CustomButton title='Science' handlePress={() => {setCategories(["Science"])}} containerStyles='mt-2 mr-2' />
-            <CustomButton title='History' handlePress={() => {setCategories(["History"])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Fine Arts' handlePress={() => {setCategories(["Fine Arts"])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Literature' handlePress={() => {setCategories(["Literature"])}} containerStyles='mt-2 mx-2' />
-            <CustomButton title='Mythology' handlePress={() => {setCategories(["Mythology"])}} containerStyles='mt-2 ml-2' />
+            <CustomButton title='Science' isActive={toggleCategories.science} handlePress={() => {handleCategoryPress(["Science"])}} containerStyles='mt-2 mr-2' />
+            <CustomButton title='History' isActive={toggleCategories.history} handlePress={() => {handleCategoryPress(["History"])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Fine Arts' isActive={toggleCategories.finearts} handlePress={() => {handleCategoryPress(["Fine Arts"])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Literature' isActive={toggleCategories.literature} handlePress={() => {handleCategoryPress(["Literature"])}} containerStyles='mt-2 mx-2' />
+            <CustomButton title='Mythology' isActive={toggleCategories.mythology} handlePress={() => {handleCategoryPress(["Mythology"])}} containerStyles='mt-2 ml-2' />
           </ScrollView>
           <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
           <View className='flex-row justify-between'>
@@ -162,11 +213,11 @@ const Play = () => {
 
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
-        { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}><CustomButton 
-          title="Start"
-          handlePress={() => {fetchData()}}
-          containerStyles='bg-tertiary'
-        /></Animated.View> : <FlatList
+        { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
+          <TouchableOpacity onPress={() => {fetchData()}} className={"bg-tertiary rounded-xl p-4"} >
+              <Text className={"text-secondary text-center text-lg font-gBold"}> Start </Text>
+          </TouchableOpacity>
+        </Animated.View> : <FlatList
           data={questions}
           keyExtractor={(item, index) => `${item._id}-${index}`}
           renderItem={({item}) => (
