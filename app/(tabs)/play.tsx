@@ -18,12 +18,12 @@ const Play = () => {
   const [ currentPage, setCurrentPage] = React.useState(0); 
   const [ questions , setQuestions ] = React.useState<questions[]>([]);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
-  const [showStart, setShowStart] = React.useState(true);
+  const [ showStart , setShowStart ] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
-  const [difficulties, setDifficulties] = React.useState<number[] | undefined>(undefined);
+  const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
 
-  const [questionType, setQuestionType] = React.useState<string | undefined>(undefined);
+  const [questionType, setQuestionType] = React.useState<string | undefined>(undefined); //IMPLEMENT LATER
 
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
@@ -41,14 +41,14 @@ const Play = () => {
       setShowStart(false);
     });
 
-    fetchDBQuestions({queryString:undefined, difficulties: difficulties, categories: categories, questionType: questionType }).then((questions) => {
+    fetchDBQuestions({difficulties: difficulties, categories: categories, questionType: questionType }).then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
     });
   }
 
   const appendQuestion = async () => {
-    const newQuestion = await fetchDBQuestions({queryString:undefined, difficulties: difficulties, categories: categories, questionType: questionType })
+    const newQuestion = await fetchDBQuestions({difficulties: difficulties, categories: categories, questionType: questionType })
     setQuestions([...questions, newQuestion[0]]);
   }
 

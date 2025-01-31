@@ -6,7 +6,7 @@ export interface questions {
     answer_sanitized: string;
 }
 
-export const fetchDBQuestions = async ({queryString, difficulties, categories, questionType}:any ): Promise<questions[]> => {
+export const fetchDBQuestions = async ({difficulties, categories, questionType}:any ): Promise<questions[]> => {
     // const response = await fetch(`https://qbreader.org/api/query?queryString=
         // ${queryString}&
         // ${difficulties}&
