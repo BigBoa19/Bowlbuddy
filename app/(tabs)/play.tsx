@@ -21,11 +21,8 @@ const Play = () => {
   const [showStart, setShowStart] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
   const [difficulties, setDifficulties] = React.useState<number[] | undefined>(undefined);
-  const [toggleDifficulties, setToggleDifficulties] = React.useState({ms:false, hs:false, college:false, open:false})
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
-  const [toggleCategories, setToggleCategories] = React.useState({science:false, history:false, finearts:false, literature:false, mythology:false})
-  const scrollViewRef = React.useRef<ScrollView>(null);
-  const scrollPosition = React.useRef(0);
+
   const [questionType, setQuestionType] = React.useState<string | undefined>(undefined);
 
   React.useEffect(()=>{
@@ -62,51 +59,6 @@ const Play = () => {
     setCurrentQuestion(questions[currentPage])
   };
 
-  const handleDifficultyPress = (diffArray:number[]) => {
-    const isAnyDifficultyActive = diffArray.some(d => difficulties?.includes(d));
-    if (isAnyDifficultyActive) {
-      setDifficulties(prevDifficulties =>
-        prevDifficulties?.filter(d => !diffArray.includes(d))
-      );
-    } else {
-      setDifficulties(prevDifficulties => [
-        ...(prevDifficulties || []), 
-        ...diffArray,
-      ]);
-  
-    }
-
-    if(diffArray.includes(1)){ setToggleDifficulties({...toggleDifficulties, ms: !toggleDifficulties.ms}); }
-    else if(diffArray.includes(2)) {setToggleDifficulties({...toggleDifficulties, hs: !toggleDifficulties.hs});}
-    else if(diffArray.includes(6)) {setToggleDifficulties({...toggleDifficulties, college: !toggleDifficulties.college});}
-    else {setToggleDifficulties({...toggleDifficulties, open: !toggleDifficulties.open});}
-  }
-
-  const handleCategoryPress = (catArray:string[]) => {
-    const isAnyCategoryActive = catArray.some(c => categories?.includes(c));
-    if (isAnyCategoryActive) {
-      // Remove all categories in catArray from the categories array
-      setCategories(prevCategories =>
-        prevCategories?.filter(c => !catArray.includes(c))
-      );
-    } else {
-      // Add all categories in catArray to the categories array
-      setCategories(prevCategories => [
-        ...(prevCategories || []), // Preserve existing categories
-        ...catArray, // Add new categories
-      ]);
-    }
-
-    if(catArray.includes("Science")){ setToggleCategories({...toggleCategories, science: !toggleCategories.science}); }
-    else if(catArray.includes("History")) {setToggleCategories({...toggleCategories, history: !toggleCategories.history});}
-    else if(catArray.includes("Fine Arts")) {setToggleCategories({...toggleCategories, finearts: !toggleCategories.finearts});}
-    else if(catArray.includes("Literature")) {setToggleCategories({...toggleCategories, literature: !toggleCategories.literature});}
-    else {setToggleCategories({...toggleCategories, mythology: !toggleCategories.mythology});}
-    requestAnimationFrame(() => {
-      scrollViewRef.current?.scrollTo({ x: scrollPosition.current, animated: false });
-    });
-  }
-
   const handleSave = async (question: questions) => {
     try {
       const usersDocRef = doc(db, 'users', user?.uid || '');
@@ -140,11 +92,10 @@ const Play = () => {
             setModalVisible(!modalVisible);
           }}>
           <SettingsModal
-            toggleDifficulties={toggleDifficulties}
-            handleDifficultyPress={handleDifficultyPress}
-            toggleCategories={toggleCategories}
-            handleCategoryPress={handleCategoryPress}
-            scrollPosition={scrollPosition}
+            difficulties={difficulties}
+            setDifficulties={setDifficulties}
+            categories={categories}
+            setCategories={setCategories}
             setModalVisible={setModalVisible}
           />
         </Modal>
