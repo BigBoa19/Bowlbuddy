@@ -59,7 +59,7 @@ export default function TabsLayout() {
   
       animationRef.current = Animated.timing(shiftValue, {
         toValue: 0,
-        duration: 30000,
+        duration: 10000,
         useNativeDriver: true,
       });
   

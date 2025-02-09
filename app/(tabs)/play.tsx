@@ -22,15 +22,18 @@ const Play = () => {
   const scaleValue = React.useRef(new Animated.Value(1)).current;
   const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const [questionType, setQuestionType] = React.useState<string | undefined>(undefined); //IMPLEMENT LATER
+
 
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
       setDifficulties(undefined);
     }
-    console.log("[diff, cat]:", [difficulties, categories])
   },[difficulties, categories]) // printing diff and cat
+
+
 
   const fetchData = async () => {
     Animated.timing(scaleValue, {
@@ -48,9 +51,13 @@ const Play = () => {
   }
 
   const appendQuestion = async () => {
-    const newQuestion = await fetchDBQuestions({difficulties: difficulties, categories: categories, questionType: questionType })
-    setQuestions([...questions, newQuestion[0]]);
-  }
+    if (isLoading) return;
+  
+    setIsLoading(true);
+    const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories, questionType: questionType });
+    setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
+    setIsLoading(false);
+  };
 
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
@@ -146,7 +153,7 @@ const Play = () => {
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
           onEndReached={appendQuestion}
-          onEndReachedThreshold={1}
+          onEndReachedThreshold={0.5}
         />}
          
       </View>
