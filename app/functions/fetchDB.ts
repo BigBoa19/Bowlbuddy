@@ -7,12 +7,6 @@ export interface questions {
 }
 
 export const fetchDBQuestions = async ({difficulties, categories, questionType}:any ): Promise<questions[]> => {
-    // const response = await fetch(`https://qbreader.org/api/query?queryString=
-        // ${queryString}&
-        // ${difficulties}&
-        // ${categories}&
-        // ${questionType}
-    // &randomize=true`);
     let url = `https://qbreader.org/api/query?randomize=true`
     if(difficulties !== undefined){
         url += `&difficulties=${difficulties}`;

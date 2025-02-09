@@ -1,7 +1,9 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import CustomButton from './CustomButton';
 import Slider from '@react-native-community/slider';
+
+
 
 interface SettingsModalProps {
   difficulties: number[] | undefined;
@@ -18,7 +20,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   setCategories,
   setModalVisible,
 }) => {
-    const scrollPosition = useRef(0);
     const [toggleDifficulties, setToggleDifficulties] = React.useState({
         ms: false,
         hs: false,
