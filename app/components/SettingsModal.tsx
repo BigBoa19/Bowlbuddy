@@ -11,6 +11,10 @@ interface SettingsModalProps {
   categories: string[] | undefined;
   setCategories: React.Dispatch<React.SetStateAction<string[] | undefined>>;
   setModalVisible: (visible: boolean) => void;
+  enableTimer: boolean;
+  setEnableTimer: React.Dispatch<React.SetStateAction<boolean>>;
+  allowRebuzz: boolean;
+  setAllowRebuzz: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -19,6 +23,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   categories,
   setCategories,
   setModalVisible,
+  enableTimer,
+  setEnableTimer,
+  allowRebuzz,
+  setAllowRebuzz,
 }) => {
     const [toggleDifficulties, setToggleDifficulties] = React.useState({
         ms: false,
@@ -77,6 +85,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         // No need to toggle local state manually—the useEffect will derive it.
     }, [categories, setCategories]);
 
+    useEffect(() => {
+        console.log("enableTimer updated to:", enableTimer);
+      }, [enableTimer]);
+
     return (
         <View className='flex-1 justify-center p-4'>
             <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
@@ -89,7 +101,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     <CustomButton title='Open' isActive={toggleDifficulties.open} handlePress={() => handleDifficultyPress([10])} containerStyles='mt-2 ml-2'/>
                 </View>
 
-                <Text className='text-tertiary text-xl font-gBold py-2'>Category</Text>
+                <Text className='text-tertiary text-xl font-gBold py-2 mt-2'>Category</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
                     <CustomButton title='Science' isActive={toggleCategories.science} handlePress={() => handleCategoryPress(["Science"])} containerStyles='mt-2 mr-2'/>
                     <CustomButton title='History' isActive={toggleCategories.history} handlePress={() => handleCategoryPress(["History"])} containerStyles='mt-2 mx-2'/>
@@ -98,12 +110,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     <CustomButton title='Mythology' isActive={toggleCategories.mythology} handlePress={() => handleCategoryPress(["Mythology"])} containerStyles='mt-2 ml-2'/>
                 </ScrollView>
 
-                <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
+                {/* <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
                 <View className='flex-row justify-between'>
                     <CustomButton title='Tossup' handlePress={() => {}} containerStyles='mt-2 mr-2'/>
                     <CustomButton title='Bonus' handlePress={() => {}} containerStyles='mt-2 ml-2'/>
-                </View>
-                <Text className='text-tertiary text-xl font-gBold py-2'>Reading Speed</Text>
+                </View> */}
+                <Text className='text-tertiary text-xl font-gBold py-2 mt-2'>Reading Speed</Text>
                 <Slider
                 style={{ width: 240, height: 40 }}
                 minimumValue={0}
@@ -112,8 +124,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 thumbTintColor='#cccfff'
                 />
                 <View className='flex-row justify-between'>
-                    <CustomButton title='Enable Timer' handlePress={() => {}} containerStyles='mt-5 mr-2' />
-                    <CustomButton title='Allow Rebuzz' handlePress={() => {}} containerStyles='mt-5 ml-2' />
+                    <CustomButton 
+                        title='Timer' 
+                        containerStyles='mt-5 mr-2' 
+                        isActive={enableTimer}
+                        handlePress={() => {
+                            setEnableTimer(prev => {
+                                return !prev;
+                            });
+                        }}
+                    />
+                    <CustomButton title='Rebuzz' 
+                        containerStyles='mt-5 ml-2'
+                        isActive={allowRebuzz}
+                        handlePress = {()=>{setAllowRebuzz(!allowRebuzz)}}
+                    />
                 </View>
                 <CustomButton title='Close' handlePress={() => setModalVisible(false)} containerStyles='mt-5' />
             </View>

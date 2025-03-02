@@ -6,26 +6,34 @@ import { questions, fetchDBQuestionsNoSearch, fetchRandomQuestion, fetchDBQuesti
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
-import { UserContext, BuzzCircleContext, QuestionContext } from '../context';
+import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
 
 const Play = () => {
   const { setAnimating } = React.useContext(BuzzCircleContext);
+  const { enableTimer, setEnableTimer, allowRebuzz, setAllowRebuzz } = React.useContext(SettingsContext);
   const { user } = React.useContext(UserContext);
+  const { setCurrentQuestion } = React.useContext(QuestionContext);
+
   const [ paused , setPaused ] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [ height, setHeight] = React.useState(0);
   const [ currentPage, setCurrentPage] = React.useState(0); 
   const [ questions , setQuestions ] = React.useState<questions[]>([]);
-  const { setCurrentQuestion } = React.useContext(QuestionContext);
   const [ showStart , setShowStart ] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
   const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
   const [isLoading, setIsLoading] = React.useState(false);
+  
+  
 
   const [questionType, setQuestionType] = React.useState<string | undefined>(undefined); //IMPLEMENT LATER
 
+  React.useEffect(()=>{
+    console.log("Enable Timer:", enableTimer)
+    console.log("Allow Rebuzz:", allowRebuzz)
+  },[enableTimer,allowRebuzz])
 
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
@@ -47,6 +55,7 @@ const Play = () => {
     fetchDBQuestions({difficulties: difficulties, categories: categories, questionType: questionType }).then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
+      appendQuestion()
     });
   }
 
@@ -104,6 +113,10 @@ const Play = () => {
             categories={categories}
             setCategories={setCategories}
             setModalVisible={setModalVisible}
+            enableTimer = {enableTimer}
+            setEnableTimer={setEnableTimer}
+            allowRebuzz = {allowRebuzz}
+            setAllowRebuzz={setAllowRebuzz}
           />
         </Modal>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -167,7 +180,15 @@ const Play = () => {
         {/* Buzz Screen Modal */}
         <></>
         {/* Buzz! */}
-        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setAnimating(true)}>
+        {/* I NEED TO CHANGE THE CONDITION FOR BUZZ BEING AVAILABLE */}
+        {/* COULD MAKE IT SO THAT ITS SLIGHTLY TRANSPARENT BEFORE PRESSING START BUTTON */}
+        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" 
+          onPress={
+            () => {
+              if(!showStart) {setAnimating(true)}
+            }
+          }
+        >
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
         {/* Saved icon */}

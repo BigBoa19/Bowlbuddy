@@ -3,7 +3,7 @@ import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
-import { BuzzCircleContext, QuestionContext } from '../context';
+import { BuzzCircleContext, QuestionContext, SettingsContext } from '../context';
 import { Audio } from 'expo-av';
 // @ts-ignore
 import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js"
@@ -29,9 +29,11 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 
 export default function TabsLayout() {
   const { currentQuestion } = React.useContext(QuestionContext);
-  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
+  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext);
+  const {enableTimer, allowRebuzz} = React.useContext(SettingsContext);
+
   const scaleValue = React.useRef(new Animated.Value(0)).current;
-  const [ buzzModal, setBuzzModal ] = React.useState(false)
+  const [ buzzModal, setBuzzModal ] = React.useState(false);
 
   const BuzzScreen = () => {
     const [ inputAnswer, setInputAnswer ] = React.useState('')
@@ -42,44 +44,48 @@ export default function TabsLayout() {
       inputRange: [0, 1],
       outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
     }))
+    
 
     const shiftValue = React.useRef(new Animated.Value(-350)).current;
     const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
       inputRange: [-350, -150, 0], // Three stops: start, middle, end
       outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
     }))
+    const [barOpacity, setBarOpacity] = React.useState(1);
 
     const isAnswerChecked = React.useRef(false); // Track if checkAnswer has been called
     const isMounted = React.useRef(true); // Track if the component is mounted
     const animationRef = React.useRef<Animated.CompositeAnimation | null>(null);
     
     React.useEffect(() => {
-      console.log('Starting animation'); // Debugging
-      isAnswerChecked.current = false; // Reset the guard
-  
-      animationRef.current = Animated.timing(shiftValue, {
-        toValue: 0,
-        duration: 10000,
-        useNativeDriver: true,
-      });
-  
-      animationRef.current.start(({ finished }) => {
-        if (finished && !isAnswerChecked.current && isMounted.current) {
-          // console.log('Animation completed'); // Debugging
-          isAnswerChecked.current = true;
-          console.log(inputAnswer)
-          startAnswerCheck(inputAnswer);
-        }
-      });
-  
-      // Cleanup function to stop the animation on unmount
-      return () => {
-        // console.log('Cleaning up animation'); // Debugging
-        isMounted.current = false; // Mark component as unmounted
-        if (animationRef.current) {
-          animationRef.current.stop(); // Stop the animation
-        }
-      };
+      if(enableTimer){
+        console.log('Starting animation'); // Debugging
+        isAnswerChecked.current = false; // Reset the guard
+    
+        animationRef.current = Animated.timing(shiftValue, {
+          toValue: 0,
+          duration: 10000,
+          useNativeDriver: true,
+        });
+    
+        animationRef.current.start(({ finished }) => {
+          if (finished && !isAnswerChecked.current && isMounted.current) {
+            // console.log('Animation completed'); // Debugging
+            isAnswerChecked.current = true;
+            console.log(inputAnswer)
+            startAnswerCheck(inputAnswer);
+          }
+        });
+    
+        // Cleanup function to stop the animation on unmount
+        return () => {
+          // console.log('Cleaning up animation'); // Debugging
+          isMounted.current = false; // Mark component as unmounted
+          if (animationRef.current) {
+            animationRef.current.stop(); // Stop the animation
+          }
+        };
+      } else { setBarOpacity(0) }
     }, []);
 
     const playSound = async (checkRight:boolean) => {
@@ -178,7 +184,7 @@ export default function TabsLayout() {
                 transform:[{scaleX:shiftValue}], backgroundColor:barColor
                 }}>
             </Animated.View> */}
-            <View className='shadow-lg shadow-gray-700'>
+            <View className='shadow-lg shadow-gray-700' style={{opacity:barOpacity}}>
               <View className='w-full h-6 bg-gray-500 rounded-full overflow-hidden mt-16'>
               {/* Animated Progress Bar */}
                 <Animated.View

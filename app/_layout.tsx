@@ -1,6 +1,6 @@
 import { Stack, SplashScreen } from "expo-router";
 import "../global.css";
-import { QuestionContext, UserContext } from "./context"; import useUserData from './functions/useUserData';
+import { QuestionContext, SettingsContext, UserContext } from "./context"; import useUserData from './functions/useUserData';
 import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
@@ -9,6 +9,8 @@ import { BuzzCircleContext } from "./context"
 export default function RootLayout() {
   const [currentQuestion, setCurrentQuestion] = React.useState({_id:'', question:'', question_sanitized:'', answer:'',  answer_sanitized:''})
   const [isAnimating, setIsAnimating] = React.useState(false);
+  const [enableTimer, setEnableTimer] = React.useState(true);
+  const [allowRebuzz, setAllowRebuzz] = React.useState(false);
   const userData = useUserData();
 
 
@@ -40,6 +42,12 @@ export default function RootLayout() {
   return (
     <AlertNotificationRoot>
       {/* Providers */}
+      <SettingsContext.Provider value = {{
+        enableTimer:enableTimer, 
+        setEnableTimer:setEnableTimer,
+        allowRebuzz:allowRebuzz,
+        setAllowRebuzz:setAllowRebuzz,
+      }}>
       <QuestionContext.Provider value={{currentQuestion:currentQuestion, setCurrentQuestion:setCurrentQuestion}}>
       <BuzzCircleContext.Provider value={{ isAnimating:isAnimating, setAnimating:setIsAnimating }}>
       <UserContext.Provider value={{ user: userData.user }} >
@@ -55,6 +63,7 @@ export default function RootLayout() {
       </UserContext.Provider>
       </BuzzCircleContext.Provider>
       </QuestionContext.Provider>
+      </SettingsContext.Provider>
       {/* Providers */}
     </AlertNotificationRoot>
   )

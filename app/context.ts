@@ -15,6 +15,13 @@ type BuzzCircleContextType = {
     isAnimating: boolean;
     setAnimating: (animating:boolean) => any;
 };
+
+type SettingsContextType = {
+    enableTimer: boolean;
+    setEnableTimer: React.Dispatch<React.SetStateAction<boolean>>;
+    allowRebuzz: boolean;
+    setAllowRebuzz: React.Dispatch<React.SetStateAction<boolean>>;
+};
   
 
 export const UserContext = createContext<UserContextType>({user: null });
@@ -27,4 +34,11 @@ export const QuestionContext = createContext<QuestionType>({
     answer_sanitized:''},
     setCurrentQuestion: () => {}
 })
+export const SettingsContext = createContext<SettingsContextType>({
+    enableTimer: false,
+    setEnableTimer: () => {},
+    allowRebuzz:false,
+    setAllowRebuzz: () => {}
+});
+
 
