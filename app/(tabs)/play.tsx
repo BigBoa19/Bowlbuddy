@@ -18,7 +18,7 @@ const Play = () => {
   const [ paused , setPaused ] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [ height, setHeight] = React.useState(0);
-  const [ currentPage, setCurrentPage] = React.useState(0); 
+  const [ currentPage, setCurrentPage] = React.useState(0);
   const [ questions , setQuestions ] = React.useState<questions[]>([]);
   const [ showStart , setShowStart ] = React.useState(true);
   const scaleValue = React.useRef(new Animated.Value(1)).current;
@@ -151,14 +151,14 @@ const Play = () => {
           keyExtractor={(item, index) => `${item._id}-${index}`}
           renderItem={({item}) => (
             <View>
-              {/* <FocusedTextAnimator 
+              <FocusedTextAnimator 
                 sentence={item.question_sanitized} 
                 height={height} 
                 page={currentPage} 
                 paused={paused}
-              /> */}
-              {/* <Text>{item.question}</Text> */}
-              <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text>
+              />
+
+              {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}
             </View>
           )}
           pagingEnabled={true}

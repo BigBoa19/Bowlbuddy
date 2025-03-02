@@ -41,9 +41,15 @@ const Saved = () => {
   const [searchQuery, setQuery]= React.useState('')
 
   React.useEffect(() => {
-    const usersDocRef = doc(db, 'users', user?.uid || '');
+    if (!user?.uid) {
+      setQuestions([]);
+      return; 
+    }
+  
+    const usersDocRef = doc(db, 'users', user.uid);
     const savedQuestionsRef = collection(usersDocRef, 'savedQuestions');
     const q = query(savedQuestionsRef);
+  
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const questions = snapshot.docs.map((doc) => ({
         _id: doc.id,
@@ -51,8 +57,10 @@ const Saved = () => {
       }));
       setQuestions(questions);
     });
+  
     return () => unsubscribe();
-  }, [user])
+  
+  }, [user]);  
 
   
   const filterData = (item: questions) => {
