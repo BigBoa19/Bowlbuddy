@@ -5,8 +5,6 @@ import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
 import { BuzzCircleContext } from "./context"
-import { auth } from '@/firebaseConfig';
-import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function RootLayout() {
   const [currentQuestion, setCurrentQuestion] = React.useState({_id:'', question:'', question_sanitized:'', answer:'',  answer_sanitized:''})
@@ -14,8 +12,6 @@ export default function RootLayout() {
   const [enableTimer, setEnableTimer] = React.useState(true);
   const [allowRebuzz, setAllowRebuzz] = React.useState(false);
   const userData = useUserData();
-  const [isLoading, setIsLoading] = React.useState(false);
-
 
 
   const [fontsLoaded, error] = useFonts({

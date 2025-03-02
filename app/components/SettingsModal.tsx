@@ -85,10 +85,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         // No need to toggle local state manually—the useEffect will derive it.
     }, [categories, setCategories]);
 
-    useEffect(() => {
-        console.log("enableTimer updated to:", enableTimer);
-      }, [enableTimer]);
-
     return (
         <View className='flex-1 justify-center p-4'>
             <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
