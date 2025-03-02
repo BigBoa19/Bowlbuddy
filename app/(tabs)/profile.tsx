@@ -14,7 +14,7 @@ const Profile = () => {
     try {
       await signOut(auth);
       console.log("signed out");
-      //router.push('/(auth)/sign-in')
+      router.push('/(auth)/sign-in')
       
     } catch (error: any) {
       console.log(error);
