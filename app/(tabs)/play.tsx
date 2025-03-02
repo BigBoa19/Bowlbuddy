@@ -2,7 +2,7 @@ import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, F
 import React from 'react'
 import icons from '@/constants/icons'
 import FocusedTextAnimator from '../components/TextAnimator'
-import { questions, fetchDBQuestionsNoSearch, fetchRandomQuestion, fetchDBQuestions } from '../functions/fetchDB'
+import { questions, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
@@ -28,7 +28,6 @@ const Play = () => {
   
   
 
-  const [questionType, setQuestionType] = React.useState<string | undefined>(undefined); //IMPLEMENT LATER
 
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
@@ -52,7 +51,7 @@ const Play = () => {
       setShowStart(false);
     });
 
-    fetchDBQuestions({difficulties: difficulties, categories: categories, questionType: questionType }).then((questions) => {
+    fetchDBQuestions({difficulties: difficulties, categories: categories }).then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
       appendQuestion()
@@ -63,7 +62,7 @@ const Play = () => {
     if (isLoading) return;
   
     setIsLoading(true);
-    const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories, questionType: questionType });
+    const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
     setIsLoading(false);
   };
@@ -151,14 +150,14 @@ const Play = () => {
           keyExtractor={(item, index) => `${item._id}-${index}`}
           renderItem={({item}) => (
             <View>
-              <FocusedTextAnimator 
+              {/* <FocusedTextAnimator 
                 sentence={item.question_sanitized} 
                 height={height} 
                 page={currentPage} 
                 paused={paused}
-              />
+              /> */}
 
-              {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}
+              <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text>
             </View>
           )}
           pagingEnabled={true}

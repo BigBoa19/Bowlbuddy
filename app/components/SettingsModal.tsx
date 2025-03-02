@@ -109,12 +109,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     <CustomButton title='Literature' isActive={toggleCategories.literature} handlePress={() => handleCategoryPress(["Literature"])} containerStyles='mt-2 mx-2'/>
                     <CustomButton title='Mythology' isActive={toggleCategories.mythology} handlePress={() => handleCategoryPress(["Mythology"])} containerStyles='mt-2 ml-2'/>
                 </ScrollView>
-
-                {/* <Text className='text-tertiary text-xl font-gBold py-2'>Type of Question</Text>
-                <View className='flex-row justify-between'>
-                    <CustomButton title='Tossup' handlePress={() => {}} containerStyles='mt-2 mr-2'/>
-                    <CustomButton title='Bonus' handlePress={() => {}} containerStyles='mt-2 ml-2'/>
-                </View> */}
                 <Text className='text-tertiary text-xl font-gBold py-2 mt-2'>Reading Speed</Text>
                 <Slider
                 style={{ width: 240, height: 40 }}
