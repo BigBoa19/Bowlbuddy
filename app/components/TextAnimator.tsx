@@ -41,15 +41,21 @@ const TextAnimator: React.FC<TextAnimatorProps> = ({sentence, height, page, paus
     )
 }
 
-const FocusedTextAnimator: React.FC<TextAnimatorProps> = ({sentence, height, page, paused}) => {
+const FocusedTextAnimator: React.FC<TextAnimatorProps> = React.memo(({ sentence, height, page, paused }) => {
   const { currentQuestion } = React.useContext(QuestionContext);
-  return (
-    <View>
-      {(currentQuestion.question_sanitized === sentence) ? 
-      <TextAnimator sentence={sentence} height={height} page={page} paused={paused} />
-        : <View style={{height: height}}><Text className='text-sm text-secondary text-left font-gBook'>Loading</Text></View>}
+  
+  // Only render the animator if the current question matches the sentence
+  if (currentQuestion.question_sanitized !== sentence) {
+    return (
+      <View style={{ height }}>
+        <Text style={{ fontSize: 14, color: 'gray' }}>Loading</Text>
       </View>
-  )
-}
+    );
+  }
+  
+  return (
+    <TextAnimator sentence={sentence} height={height} page={page} paused={paused} />
+  );
+});
 
 export default FocusedTextAnimator

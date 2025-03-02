@@ -1,12 +1,12 @@
 import { View, Text, Image, Animated, SafeAreaView, Button, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
-import { BuzzCircleContext, QuestionContext } from '../context';
+import { BuzzCircleContext, QuestionContext, SettingsContext } from '../context';
 import { Audio } from 'expo-av';
-import { verifyAnswer } from '../functions/fetchDB'
-
+// @ts-ignore
+import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js"
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -29,9 +29,11 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 
 export default function TabsLayout() {
   const { currentQuestion } = React.useContext(QuestionContext);
-  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext)
+  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext);
+  const {enableTimer, allowRebuzz} = React.useContext(SettingsContext);
+
   const scaleValue = React.useRef(new Animated.Value(0)).current;
-  const [ buzzModal, setBuzzModal ] = React.useState(false)
+  const [ buzzModal, setBuzzModal ] = React.useState(false);
 
   const BuzzScreen = () => {
     const [ inputAnswer, setInputAnswer ] = React.useState('')
@@ -42,20 +44,49 @@ export default function TabsLayout() {
       inputRange: [0, 1],
       outputRange: ["#8a92eb", "#00cd00"], // Secondary to Green
     }))
+    
 
-    const widthValue = React.useRef(new Animated.Value(0)).current;
-    const [barColor, setBarColor] = React.useState(widthValue.interpolate({
-      inputRange: [0,330],
-      outputRange: ["#66ff00", "#ee4b2b"]
+    const shiftValue = React.useRef(new Animated.Value(-350)).current;
+    const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
+      inputRange: [-350, -150, 0], // Three stops: start, middle, end
+      outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
     }))
+    const [barOpacity, setBarOpacity] = React.useState(1);
 
-    React.useEffect(()=>{
-      Animated.timing(widthValue, {
-        toValue: 330,
-        duration: 10000,
-        useNativeDriver: false
-      }).start();
-    },[])
+    const isAnswerChecked = React.useRef(false); // Track if checkAnswer has been called
+    const isMounted = React.useRef(true); // Track if the component is mounted
+    const animationRef = React.useRef<Animated.CompositeAnimation | null>(null);
+    
+    React.useEffect(() => {
+      if(enableTimer){
+        console.log('Starting animation'); // Debugging
+        isAnswerChecked.current = false; // Reset the guard
+    
+        animationRef.current = Animated.timing(shiftValue, {
+          toValue: 0,
+          duration: 10000,
+          useNativeDriver: true,
+        });
+    
+        animationRef.current.start(({ finished }) => {
+          if (finished && !isAnswerChecked.current && isMounted.current) {
+            // console.log('Animation completed'); // Debugging
+            isAnswerChecked.current = true;
+            console.log(inputAnswer)
+            startAnswerCheck(inputAnswer);
+          }
+        });
+    
+        // Cleanup function to stop the animation on unmount
+        return () => {
+          // console.log('Cleaning up animation'); // Debugging
+          isMounted.current = false; // Mark component as unmounted
+          if (animationRef.current) {
+            animationRef.current.stop(); // Stop the animation
+          }
+        };
+      } else { setBarOpacity(0) }
+    }, []);
 
     const playSound = async (checkRight:boolean) => {
       const soundPath = checkRight 
@@ -107,12 +138,13 @@ export default function TabsLayout() {
       console.log(error);
     };
     
-    const checkAnswer = async (inputAnswer:string) =>{
+    const startAnswerCheck = (inputAnswer:string) =>{
+      shiftValue.stopAnimation();
       console.log(currentQuestion.answer)
-      const response = await verifyAnswer(currentQuestion.answer, inputAnswer);
-      console.log(response)
-      if(response.directedPrompt){
-        //whatever
+      const response = checkAnswer(currentQuestion.answer, inputAnswer);
+      console.log("Response: ", response.directive)
+      if(response.directedPrompt){ //if answer is prompt
+        //code for prompt
       }
 
       if(response.directive=='accept'){
@@ -140,6 +172,7 @@ export default function TabsLayout() {
         })
       })
     }
+    
 
     return (
       <View className='flex-1 bg-secondary'>
@@ -147,7 +180,24 @@ export default function TabsLayout() {
           {/* Bar + BuzzScreen Text */}
           <View className='flex-1 justify-between mt-9 mx-9'>
             {/* Bar */}
-            <Animated.View className='border-2 p-3 rounded-full mt-16 shadow-lg' style={{width:widthValue, backgroundColor:barColor}}></Animated.View>
+            {/* <Animated.View className='border-2 p-3 rounded-full mt-16 shadow-lg' style={{
+                transform:[{scaleX:shiftValue}], backgroundColor:barColor
+                }}>
+            </Animated.View> */}
+            <View className='shadow-lg shadow-gray-700' style={{opacity:barOpacity}}>
+              <View className='w-full h-6 bg-gray-500 rounded-full overflow-hidden mt-16'>
+              {/* Animated Progress Bar */}
+                <Animated.View
+                  className='h-full rounded-full shadow-lg shadow-gray-900'
+                  style={{
+                    transform: [{ translateX:shiftValue }],
+                    backgroundColor: barColor,
+                    width: '100%', // Set the initial width to 100%
+                    transformOrigin: 'left', // Ensure scaling starts from the left
+                  }}
+                />
+              </View>
+            </View>
 
             <Text className='text-white text-3xl text-center'>
               BuzzScreen
@@ -166,7 +216,7 @@ export default function TabsLayout() {
               onChangeText={(e) => setInputAnswer(e)}
               className='flex-row w-96 border-2 p-2 rounded-lg'
             />
-            <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>checkAnswer(inputAnswer)}>
+            <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>startAnswerCheck(inputAnswer)}>
               <Text className='font-gBold'>Submit Answer</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onBuzzClose}>
