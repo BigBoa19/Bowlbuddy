@@ -1,6 +1,6 @@
 import { Stack, SplashScreen } from "expo-router";
 import "../global.css";
-import { QuestionContext, SettingsContext, UserContext } from "./context"; import useUserData from './functions/useUserData';
+import { QuestionContext, SettingsContext, UserContext,PointsContext } from "./context"; import useUserData from './functions/useUserData';
 import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
@@ -11,6 +11,7 @@ export default function RootLayout() {
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [enableTimer, setEnableTimer] = React.useState(true);
   const [allowRebuzz, setAllowRebuzz] = React.useState(false);
+  const [points, setPoints] = React.useState(-1)
   const userData = useUserData();
 
 
@@ -42,6 +43,7 @@ export default function RootLayout() {
   return (
     <AlertNotificationRoot>
       {/* Providers */}
+      <PointsContext.Provider value={{points:points, setPoints:setPoints}}>
       <SettingsContext.Provider value = {{
         enableTimer:enableTimer, 
         setEnableTimer:setEnableTimer,
@@ -65,6 +67,7 @@ export default function RootLayout() {
       </BuzzCircleContext.Provider>
       </QuestionContext.Provider>
       </SettingsContext.Provider>
+      </PointsContext.Provider>
       {/* Providers */}
     </AlertNotificationRoot>
   )

@@ -22,6 +22,10 @@ type SettingsContextType = {
     allowRebuzz: boolean;
     setAllowRebuzz: React.Dispatch<React.SetStateAction<boolean>>;
 };
+type PointsContextType = {
+    points: number;
+    setPoints: React.Dispatch<React.SetStateAction<number>>;
+};
   
 
 export const UserContext = createContext<UserContextType>({user: null });
@@ -39,6 +43,10 @@ export const SettingsContext = createContext<SettingsContextType>({
     setEnableTimer: () => {},
     allowRebuzz:false,
     setAllowRebuzz: () => {}
+});
+export const PointsContext = createContext<PointsContextType>({
+    points:0,
+    setPoints: () => {}
 });
 
 

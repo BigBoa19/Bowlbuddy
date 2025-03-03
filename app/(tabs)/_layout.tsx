@@ -3,7 +3,7 @@ import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
-import { BuzzCircleContext, QuestionContext, SettingsContext } from '../context';
+import { BuzzCircleContext, QuestionContext, SettingsContext,PointsContext } from '../context';
 import { Audio } from 'expo-av';
 // @ts-ignore
 import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js"
@@ -31,6 +31,7 @@ export default function TabsLayout() {
   const { currentQuestion } = React.useContext(QuestionContext);
   const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext);
   const {enableTimer, allowRebuzz} = React.useContext(SettingsContext);
+  const {points, setPoints} = React.useContext(PointsContext)
 
   const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [ buzzModal, setBuzzModal ] = React.useState(false);
@@ -168,6 +169,11 @@ export default function TabsLayout() {
           duration:500,
           useNativeDriver:true
         }).start(()=>{
+          if(response.directive=='accept'){
+            setPoints(10);
+          }else{
+            setPoints(0)
+          }
           onBuzzClose()
         })
       })
@@ -215,6 +221,8 @@ export default function TabsLayout() {
               placeholder='Answer Here'
               onChangeText={(e) => setInputAnswer(e)}
               className='flex-row w-96 border-2 p-2 rounded-lg'
+              autoCorrect={false}
+              autoCapitalize="none"
             />
             <TouchableOpacity className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md' onPress={()=>startAnswerCheck(inputAnswer)}>
               <Text className='font-gBold'>Submit Answer</Text>

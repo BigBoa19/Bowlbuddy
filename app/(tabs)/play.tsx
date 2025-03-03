@@ -6,26 +6,39 @@ import { questions, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
-import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext } from '../context';
+import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
+import { throwIfAudioIsDisabled } from 'expo-av/build/Audio/AudioAvailability'
 
 const Play = () => {
-  const { setAnimating } = React.useContext(BuzzCircleContext);
+  const { isAnimating, setAnimating } = React.useContext(BuzzCircleContext);
   const { enableTimer, setEnableTimer, allowRebuzz, setAllowRebuzz } = React.useContext(SettingsContext);
   const { user } = React.useContext(UserContext);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
+  const { points, setPoints } = React.useContext(PointsContext)
 
   const [ paused , setPaused ] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [ height, setHeight] = React.useState(0);
   const [ currentPage, setCurrentPage] = React.useState(0);
   const [ questions , setQuestions ] = React.useState<questions[]>([]);
+
   const [ showStart , setShowStart ] = React.useState(true);
+
   const scaleValue = React.useRef(new Animated.Value(1)).current;
+
   const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
+
   const [isLoading, setIsLoading] = React.useState(false);
-  
+
+  const [ score, setScore ] = React.useState(0)
+  const [ correct, setCorrect ] = React.useState<boolean[]>([]);
+  const [ correctCount, setCorrectCount ] = React.useState(0);
+  const [ seen, setSeen ] = React.useState(0)
+  const [ interrupts, setInterrupts ] = React.useState(0)
+  const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
+  const [ answeredCount, setAnsweredCount ] = React.useState(0)
   
 
 
@@ -54,6 +67,8 @@ const Play = () => {
     fetchDBQuestions({difficulties: difficulties, categories: categories }).then((questions) => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
+      setAnswered([false])
+      setSeen(1)
       appendQuestion()
     });
   }
@@ -64,6 +79,8 @@ const Play = () => {
     setIsLoading(true);
     const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
+    setAnswered(prev => [...prev, false])
+    setCorrect(prev => [...prev, false])
     setIsLoading(false);
   };
 
@@ -93,6 +110,34 @@ const Play = () => {
       console.log(error);
     }
   }
+
+  React.useEffect(() => {
+    console.log("isAnimating:", isAnimating)
+    if (!isAnimating && points>-1) {
+      if(!answered[currentPage]) {setAnsweredCount(prev => prev+1)}
+      setAnswered(prev => {
+        const newanswered = [...prev];
+        newanswered[currentPage] = true;
+        return newanswered
+      })
+
+      if(!answered[currentPage] || allowRebuzz && !correct[currentPage]) {
+        if(points>0) {
+          setCorrect(prev => {
+            const newCorrect = [...prev];
+            newCorrect[currentPage]=true;
+            setCorrectCount(a => a+1)
+            return newCorrect;
+          })
+        }
+        setScore(prev => prev+points)
+      }
+    }
+  },[isAnimating])
+
+  React.useEffect(()=>{
+
+  },[correct])
 
   return (
     <SafeAreaView className='bg-background flex-1'>
@@ -130,12 +175,12 @@ const Play = () => {
       {/* Score Board */}
       <View className="flex-shrink mx-4 my-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md">
         <View className='flex-row justify-between'>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Score   125</Text>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Correct   4/8</Text>
+          <Text className="text-2xl text-tertiary text-left font-gBold">Score   {score}</Text>
+          <Text className="text-2xl text-tertiary text-left font-gBold">Correct   {correctCount}/{answeredCount}</Text>
         </View>
         <View className='flex-row justify-between'>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Interupts   3</Text>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Seen   9</Text>
+          <Text className="text-2xl text-tertiary text-left font-gBold">Interrupts   3</Text>
+          <Text className="text-2xl text-tertiary text-left font-gBold">Seen   {seen}</Text>
         </View>
       </View>
 
@@ -164,7 +209,7 @@ const Play = () => {
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
-          onEndReached={appendQuestion}
+          onEndReached={()=>{appendQuestion(); setSeen(prev=>prev+1)}}
           onEndReachedThreshold={0.5}
         />}
          
