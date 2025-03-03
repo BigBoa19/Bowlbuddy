@@ -158,7 +158,7 @@ const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, pau
   }, [page, paused, isVisible, sentence, animations, isLoading]);
 
   // Conditionally render based on isLoading
-  if (!isLoading) {
+  if (isLoading) {
     return (
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', height }}>
        <PulsingLoadingText />
