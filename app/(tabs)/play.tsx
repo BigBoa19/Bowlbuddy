@@ -29,7 +29,7 @@ const Play = () => {
 
   const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
-
+  const [readingSpeed, setReadingSpeed] = React.useState(300);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const [ score, setScore ] = React.useState(0)
@@ -38,9 +38,7 @@ const Play = () => {
   const [ seen, setSeen ] = React.useState(0)
   const [ interrupts, setInterrupts ] = React.useState(0)
   const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
-  const [ answeredCount, setAnsweredCount ] = React.useState(0)
-  
-
+  const [ answeredCount, setAnsweredCount ] = React.useState(0);
 
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
@@ -52,8 +50,6 @@ const Play = () => {
       setDifficulties(undefined);
     }
   },[difficulties, categories]) // printing diff and cat
-
-
 
   const fetchData = async () => {
     Animated.timing(scaleValue, {
@@ -161,6 +157,7 @@ const Play = () => {
             setEnableTimer={setEnableTimer}
             allowRebuzz = {allowRebuzz}
             setAllowRebuzz={setAllowRebuzz}
+            onSpeedChange={(val) => setReadingSpeed(val)}
           />
         </Modal>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -201,6 +198,7 @@ const Play = () => {
                 page={currentPage} 
                 paused={paused}
                 isVisible={index === currentPage}
+                speed={readingSpeed}
               />
 
               {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}

@@ -15,6 +15,7 @@ interface SettingsModalProps {
   setEnableTimer: React.Dispatch<React.SetStateAction<boolean>>;
   allowRebuzz: boolean;
   setAllowRebuzz: React.Dispatch<React.SetStateAction<boolean>>;
+  onSpeedChange: (val: number) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -27,6 +28,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   setEnableTimer,
   allowRebuzz,
   setAllowRebuzz,
+  onSpeedChange
 }) => {
     const [toggleDifficulties, setToggleDifficulties] = React.useState({
         ms: false,
@@ -70,7 +72,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         // Add difficulties in diffArray.
         setDifficulties(prev => [...(prev || []), ...diffArray]);
         }
-        // No need to toggle local state manually—the useEffect will derive it.
     }, [difficulties, setDifficulties]);
 
     const handleCategoryPress = useCallback((catArray: string[]) => {
@@ -82,8 +83,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         // Add categories in catArray.
         setCategories(prev => [...(prev || []), ...catArray]);
         }
-        // No need to toggle local state manually—the useEffect will derive it.
     }, [categories, setCategories]);
+
+    const handleSpeedChange = (val: number) => {
+        onSpeedChange(val);
+    }
 
     return (
         <View className='flex-1 justify-center p-4'>
@@ -107,11 +111,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </ScrollView>
                 <Text className='text-tertiary text-xl font-gBold py-2 mt-2'>Reading Speed</Text>
                 <Slider
-                style={{ width: 240, height: 40 }}
-                minimumValue={0}
-                minimumTrackTintColor='#8a92eb'
-                maximumTrackTintColor='#161622'
-                thumbTintColor='#cccfff'
+                    style={{ width: 240, height: 40, transform: [{ scaleX: -1 }] }}
+                    minimumValue={70}
+                    maximumValue={300}
+                    minimumTrackTintColor="#161622"
+                    maximumTrackTintColor="#8a92eb"
+                    thumbTintColor="#cccfff"
+                    onValueChange={handleSpeedChange}
+                    value={300}
                 />
                 <View className='flex-row justify-between'>
                     <CustomButton 

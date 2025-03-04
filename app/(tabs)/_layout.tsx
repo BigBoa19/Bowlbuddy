@@ -212,7 +212,6 @@ export default function TabsLayout() {
           
           {/* Rest of it */}
           <View className='flex-1 items-center justify-center'>
-            <Text className='text-s text-red-200'>Answer: {currentQuestion.answer_sanitized}</Text>
             {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
             {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
             {results.map((result, index) => <Text className='text-white text-xl' key={index}>{result}</Text>)}

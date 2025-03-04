@@ -1,6 +1,6 @@
 import { Text, View, Animated, Easing } from 'react-native';
 import React from 'react';
-import { QuestionContext } from '../context';
+
 
 const PulsingLoadingText: React.FC = () => {
   const animationValue = React.useRef(new Animated.Value(0)).current;
@@ -24,7 +24,6 @@ const PulsingLoadingText: React.FC = () => {
     ).start();
   }, [animationValue]);
 
-  // Only animate opacity from 0.5 to 1.0
   const opacity = animationValue.interpolate({
     inputRange: [0, 1],
     outputRange: [0.4, 1.0],
@@ -46,10 +45,11 @@ type TextAnimatorProps = {
   height: number;
   page: number;
   paused: boolean;
-  isVisible: boolean; // for controlling if animation should run
+  isVisible: boolean;
+  speed: number;
 };
 
-const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, paused, isVisible }) => {
+const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, paused, isVisible, speed }) => {
   const hasRendered = React.useRef(false);
 
   React.useEffect(() => {
@@ -58,32 +58,27 @@ const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, pau
     }
   }, [isVisible]);
 
-  const { currentQuestion } = React.useContext(QuestionContext);
   const isLoading = !hasRendered.current;
 
-  // Always call hooks unconditionally:
   const words = sentence.split(' ');
   const animations = React.useRef(words.map(() => new Animated.Value(0))).current;
 
   React.useEffect(() => {
-    if (isLoading) return; // Skip animation if we're in loading state
+    if (isLoading) return;
 
     if (!isVisible) {
-      // If not visible, immediately set all opacities to 1
       animations.forEach(anim => anim.setValue(1));
       return;
     }
     if (paused) {
       animations.forEach(anim => anim.stopAnimation());
     } else {
-      // Reset animations before starting
-      // animations.forEach(anim => anim.setValue(0));
       Animated.stagger(
-        200,
+        speed,
         animations.map(anim =>
           Animated.timing(anim, {
             toValue: 1,
-            duration: 200,
+            duration: 100,
             useNativeDriver: true,
           })
         )
