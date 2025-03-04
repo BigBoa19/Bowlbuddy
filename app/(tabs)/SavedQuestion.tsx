@@ -10,9 +10,9 @@ const SavedQuestion = () => {
       flipCard();
     }
   };
-  const { question_sanitized, answer_sanitized } = useLocalSearchParams<{
-    question_sanitized: string;
-    answer_sanitized: string;
+  const { question, answer } = useLocalSearchParams<{
+    question: string;
+    answer: string;
   }>();
 
   const [flipped, setFlipped] = useState(false);
@@ -79,16 +79,16 @@ const SavedQuestion = () => {
               frontAnimatedStyle,
             ]}
           >
-            <Text className='text-sm text-white text-left font-gBook'>{question_sanitized}</Text>
+            <Text className='text-sm text-white text-left font-gBook'>{question}</Text>
           </Animated.View>
           {/* Back side of the flashcard */}
           <Animated.View className={"mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md"}
             style={[
-              {width: '100%', height: '100%', justifyContent: 'center'},
+              {width: '100%', height: '100%', justifyContent: 'center', backfaceVisibility: 'hidden'},
               backAnimatedStyle,
             ]}
           >
-            <Text className='text-sm text-white text-center font-gBook'>{answer_sanitized}</Text>
+            <Text className='text-sm text-white text-center font-gBook'>{answer}</Text>
           </Animated.View>
         </View>
       </TouchableOpacity>

@@ -15,9 +15,7 @@ const Item = (props: questions) => (
       pathname: "/SavedQuestion",
       params: {
         question: props.question_sanitized,
-        question_sanitized: props.question_sanitized,
         answer: props.answer_sanitized,
-        answer_sanitized: props.answer_sanitized,
       },
     });
   }}
