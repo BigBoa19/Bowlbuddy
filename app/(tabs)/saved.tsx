@@ -9,30 +9,37 @@ import { doc, collection, query, onSnapshot } from 'firebase/firestore'
 import { router } from 'expo-router'
 
 const Item = (props: questions) => (
-  <View className='flex-row p-5 bg-primary mt-3 border-2 border-secondary rounded-xl'>
-    <Text className='text-white text-xl font-gBook'>{props.answer_sanitized}</Text>
-    <View className='flex-1 items-end'>
-      <TouchableOpacity onPress={() => {
-        router.push({
-          pathname: "/SavedQuestion",
-          params: {
-            question: props.question_sanitized,
-            question_sanitized: props.question_sanitized,
-            answer: props.answer_sanitized,
-            answer_sanitized: props.answer_sanitized
-          }
-        })
-      }}>
-        <Image
-            source={icons.leftArrow}
-            resizeMode="contain"
-            tintColor={'text-tertiary'}
-            className='w-6 h-6 rotate-180'
-        />
-      </TouchableOpacity>
-      
+<TouchableOpacity
+  onPress={() => {
+    router.push({
+      pathname: "/SavedQuestion",
+      params: {
+        question: props.question_sanitized,
+        question_sanitized: props.question_sanitized,
+        answer: props.answer_sanitized,
+        answer_sanitized: props.answer_sanitized,
+      },
+    });
+  }}
+>
+  <View className="flex-row items-center p-5 bg-primary mt-3 border-2 border-secondary rounded-xl">
+    <View className="flex-1 mr-4">
+      <Text
+        className="text-white text-xl font-gBook"
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {props.answer_sanitized}
+      </Text>
     </View>
+    <Image
+      source={icons.leftArrow}
+      resizeMode="contain"
+      tintColor="text-tertiary"
+      className="w-6 h-6 rotate-180"
+    />
   </View>
+</TouchableOpacity>
 );
 
 const Saved = () => {

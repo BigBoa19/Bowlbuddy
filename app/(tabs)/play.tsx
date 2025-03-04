@@ -193,16 +193,17 @@ const Play = () => {
         </Animated.View> : <FlatList
           data={questions}
           keyExtractor={(item, index) => `${item._id}-${index}`}
-          renderItem={({item}) => (
+          renderItem={({item, index}) => (
             <View>
-              {/* <FocusedTextAnimator 
+              <FocusedTextAnimator 
                 sentence={item.question_sanitized} 
                 height={height} 
                 page={currentPage} 
                 paused={paused}
-              /> */}
+                isVisible={index === currentPage}
+              />
 
-              <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text>
+              {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}
             </View>
           )}
           pagingEnabled={true}
