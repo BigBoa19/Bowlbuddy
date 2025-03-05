@@ -1,12 +1,13 @@
 import { View, Text, Image, Animated, SafeAreaView, Button, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Voice from '@react-native-voice/voice';
 import icons from "@/constants/icons";
-import { BuzzCircleContext, QuestionContext, SettingsContext,PointsContext } from '../context';
+import { BuzzCircleContext, QuestionContext, SettingsContext,PointsContext, STTContext } from '../context';
 import { Audio } from 'expo-av';
 // @ts-ignore
-import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js"
+import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js";
+import { useFocusEffect } from '@react-navigation/native';
 
 const TabIcon = ({icon, color, name, focused}: any) => {
   return(
@@ -29,9 +30,10 @@ const TabIcon = ({icon, color, name, focused}: any) => {
 
 export default function TabsLayout() {
   const { currentQuestion } = React.useContext(QuestionContext);
-  const { isAnimating, setAnimating} = React.useContext(BuzzCircleContext);
-  const {enableTimer, allowRebuzz} = React.useContext(SettingsContext);
-  const {points, setPoints} = React.useContext(PointsContext)
+  const { isAnimating, setAnimating } = React.useContext(BuzzCircleContext);
+  const {enableTimer, allowRebuzz } = React.useContext(SettingsContext);
+  const { setPoints } = React.useContext(PointsContext);
+  const { startSTT } = React.useContext(STTContext);
 
   const scaleValue = React.useRef(new Animated.Value(0)).current;
   const [ buzzModal, setBuzzModal ] = React.useState(false);
@@ -117,6 +119,7 @@ export default function TabsLayout() {
 
       return () => {
         Voice.destroy().then(Voice.removeAllListeners);
+        console.log("Voice destroyed");
       }
     }, []);
 
@@ -179,6 +182,21 @@ export default function TabsLayout() {
       })
     }
     
+    // useFocusEffect(
+    //   React.useCallback(() => {
+    //     console.log('Screen is focused');
+    //     if(startSTT){
+    //       startSpeechToText();
+    //       setStarted(false);
+    //     }
+    //     // Perform any action when the screen is focused.
+    //     // For example, fetch data or start a timer.
+  
+    //     return () => {
+    //       console.log('Screen is unfocused');
+    //       // Clean up any side effects here (stop timers, cancel requests, etc.)
+    //     };
+    //   }, []));
 
     return (
       <View className='flex-1 bg-secondary'>

@@ -15,7 +15,7 @@ const Play = () => {
   const { enableTimer, setEnableTimer, allowRebuzz, setAllowRebuzz } = React.useContext(SettingsContext);
   const { user } = React.useContext(UserContext);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
-  const { points, setPoints } = React.useContext(PointsContext)
+  const { points } = React.useContext(PointsContext);
 
   const [ paused , setPaused ] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
