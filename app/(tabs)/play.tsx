@@ -46,6 +46,8 @@ const Play = () => {
     outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
   }))
 
+  React.useEffect(()=>{StartBarAnimation()})
+
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
     console.log("Allow Rebuzz:", allowRebuzz)
@@ -153,9 +155,16 @@ const Play = () => {
 
   const StartBarAnimation = () => {
     const recordPage = currentPage
-    if(!finished[currentPage]){
-      
-    }
+
+    Animated.timing(shiftValue, {
+      toValue: 0,
+      duration: 10000,
+      useNativeDriver: true,
+    }).start(()=>{
+
+      console.log("Page finished:", recordPage)
+    })
+    
   }
 
   return (
@@ -200,9 +209,9 @@ const Play = () => {
         </View>
       </View>
       {/* Answer and Timer Bar */}
-      <View className="flex-shrink mx-4 mb-4 mt-2 h-7">
-        <View className='flex-1 bg-primary border-secondary border-2 rounded-lg p-3 shadow-md'>
-          <Text className='text-white'>TOO</Text>
+      <View className="flex-shrink mx-4 mb-3 mt-2.5">
+        <View className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
+          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>Answer</Text>
         </View>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
@@ -236,11 +245,7 @@ const Play = () => {
                 speed={readingSpeed}
                 onEnd={()=>{
                   console.log(currentPage)
-                  setFinished(prev => {
-                    const newFinished = [...prev];
-                    newFinished[currentPage] = true;
-                    return newFinished
-                  })
+                  StartBarAnimation()
                 }}
               />
 
