@@ -36,9 +36,15 @@ const Play = () => {
   const [ correct, setCorrect ] = React.useState<boolean[]>([]);
   const [ correctCount, setCorrectCount ] = React.useState(0);
   const [ seen, setSeen ] = React.useState(0)
-  const [ interrupts, setInterrupts ] = React.useState(0)
   const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
   const [ answeredCount, setAnsweredCount ] = React.useState(0);
+  const [ finished, setFinished ] = React.useState<boolean[]>([]);
+
+  const shiftValue = React.useRef(new Animated.Value(-380)).current;
+  const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
+    inputRange: [-380, -190, 0], // Three stops: start, middle, end
+    outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
+  }))
 
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
@@ -64,6 +70,7 @@ const Play = () => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
       setAnswered([false])
+      setFinished([false])
       setSeen(1)
       appendQuestion()
     });
@@ -76,6 +83,7 @@ const Play = () => {
     const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
     setAnswered(prev => [...prev, false])
+    setFinished(prev => [...prev, false])
     setCorrect(prev => [...prev, false])
     setIsLoading(false);
   };
@@ -85,6 +93,18 @@ const Play = () => {
     const page = Math.round(offsetY / height);
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
+    if(finished[currentPage]){
+      shiftValue.setValue(0)
+    } else {
+      shiftValue.setValue(-380)
+    }
+    //shiftValue.setValue(-380)
+    setFinished(prev => {
+      const newFinished = [...prev];
+      newFinished[currentPage-1] = true;
+      return newFinished
+    })
+    console.log("Current Page:", currentPage, finished[currentPage])
   };
 
   const handleSave = async (question: questions) => {
@@ -131,9 +151,12 @@ const Play = () => {
     }
   },[isAnimating])
 
-  React.useEffect(()=>{
-
-  },[correct])
+  const StartBarAnimation = () => {
+    const recordPage = currentPage
+    if(!finished[currentPage]){
+      
+    }
+  }
 
   return (
     <SafeAreaView className='bg-background flex-1'>
@@ -170,17 +193,29 @@ const Play = () => {
       <View className="h-[1px] bg-tertiary" />
 
       {/* Score Board */}
-      <View className="flex-shrink mx-4 my-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md">
+      <View className="flex-shrink mx-4 mt-5 bg-primary border-tertiary border-2 rounded-lg p-3 px-5 shadow-md">
         <View className='flex-row justify-between'>
           <Text className="text-2xl text-tertiary text-left font-gBold">Score   {score}</Text>
           <Text className="text-2xl text-tertiary text-left font-gBold">Correct   {correctCount}/{answeredCount}</Text>
         </View>
-        <View className='flex-row justify-between'>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Interrupts   3</Text>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Seen   {seen}</Text>
+      </View>
+      {/* Answer and Timer Bar */}
+      <View className="flex-shrink mx-4 mb-4 mt-2 h-7">
+        <View className='flex-1 bg-primary border-secondary border-2 rounded-lg p-3 shadow-md'>
+          <Text className='text-white'>TOO</Text>
+        </View>
+        <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
+          <Animated.View
+            className='h-full rounded-full shadow-lg shadow-gray-900'
+            style={{
+              transform: [{ translateX:shiftValue }],
+              backgroundColor: barColor,
+              width: '100%', // Set the initial width to 100%
+              transformOrigin: 'left', // Ensure scaling starts from the left
+            }}
+          />
         </View>
       </View>
-
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
         { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
@@ -199,6 +234,14 @@ const Play = () => {
                 paused={paused}
                 isVisible={index === currentPage}
                 speed={readingSpeed}
+                onEnd={()=>{
+                  console.log(currentPage)
+                  setFinished(prev => {
+                    const newFinished = [...prev];
+                    newFinished[currentPage] = true;
+                    return newFinished
+                  })
+                }}
               />
 
               {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}

@@ -21,7 +21,7 @@ const PulsingLoadingText: React.FC = () => {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    ).start(()=>{});
   }, [animationValue]);
 
   const opacity = animationValue.interpolate({
@@ -47,9 +47,10 @@ type TextAnimatorProps = {
   paused: boolean;
   isVisible: boolean;
   speed: number;
+  onEnd: any;
 };
 
-const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, paused, isVisible, speed }) => {
+const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, paused, isVisible, speed, onEnd }) => {
   const hasRendered = React.useRef(false);
 
   React.useEffect(() => {
@@ -82,7 +83,7 @@ const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, pau
             useNativeDriver: true,
           })
         )
-      ).start();
+      ).start(()=>{onEnd});
     }
   }, [page, paused, isVisible, sentence, animations, isLoading]);
 
