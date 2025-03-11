@@ -9,6 +9,7 @@ import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
 import { throwIfAudioIsDisabled } from 'expo-av/build/Audio/AudioAvailability'
+import Loading from '../loading'
 
 const Play = () => {
   const { isAnimating, setAnimating } = React.useContext(BuzzCircleContext);
@@ -40,13 +41,13 @@ const Play = () => {
   const [ answeredCount, setAnsweredCount ] = React.useState(0);
   const [ finished, setFinished ] = React.useState<boolean[]>([]);
 
+  const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
+  
   const shiftValue = React.useRef(new Animated.Value(-380)).current;
   const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
     inputRange: [-380, -190, 0], // Three stops: start, middle, end
     outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
   }))
-
-  React.useEffect(()=>{StartBarAnimation()})
 
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
@@ -73,6 +74,7 @@ const Play = () => {
       setCurrentQuestion(questions[0])
       setAnswered([false])
       setFinished([false])
+      setViewedIndices([false])
       setSeen(1)
       appendQuestion()
     });
@@ -87,6 +89,8 @@ const Play = () => {
     setAnswered(prev => [...prev, false])
     setFinished(prev => [...prev, false])
     setCorrect(prev => [...prev, false])
+    setViewedIndices(prev => [...prev, false])
+  
     setIsLoading(false);
   };
 
@@ -106,7 +110,6 @@ const Play = () => {
       newFinished[currentPage-1] = true;
       return newFinished
     })
-    console.log("Current Page:", currentPage, finished[currentPage])
   };
 
   const handleSave = async (question: questions) => {
@@ -153,19 +156,34 @@ const Play = () => {
     }
   },[isAnimating])
 
-  const StartBarAnimation = () => {
-    const recordPage = currentPage
+  const onViewableItemsChanged = () => {
+    console.log("Called:", isLoading)
+    if (!viewedIndices[currentPage]) {
+      if(!isLoading){
+        setViewedIndices((prev) => {
+          const newArray = [...prev];
+          newArray[currentPage] = true; // Mark the new index as viewed
+          console.log("Inside setViewedIndices:", newArray);
+          return newArray;
+        });
+      }
+      // Update the viewedIndices array at the specific index
+    } else {
+      // If it's a previously viewed item, set the progress bar to "finished" and stop animation
+      shiftValue.setValue(0); // Set to 100%
+      shiftValue.stopAnimation(); // Stop any ongoing animation
+    }
+  }
 
+  const startProgressBar = () => {
+
+    shiftValue.setValue(-380); // Reset to 0
     Animated.timing(shiftValue, {
       toValue: 0,
-      duration: 10000,
+      duration: 10000, // 10 seconds
       useNativeDriver: true,
-    }).start(()=>{
-
-      console.log("Page finished:", recordPage)
-    })
-    
-  }
+    }).start();
+  };
 
   return (
     <SafeAreaView className='bg-background flex-1'>
@@ -244,8 +262,8 @@ const Play = () => {
                 isVisible={index === currentPage}
                 speed={readingSpeed}
                 onEnd={()=>{
-                  console.log(currentPage)
-                  StartBarAnimation()
+                  console.log("YO")
+                  startProgressBar()
                 }}
               />
 
@@ -258,6 +276,7 @@ const Play = () => {
           onScroll={handleScroll}
           onEndReached={()=>{appendQuestion(); setSeen(prev=>prev+1)}}
           onEndReachedThreshold={0.5}
+          onViewableItemsChanged={onViewableItemsChanged}
         />}
          
       </View>

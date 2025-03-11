@@ -83,7 +83,7 @@ const TextAnimator: React.FC<TextAnimatorProps> = ({ sentence, height, page, pau
             useNativeDriver: true,
           })
         )
-      ).start(()=>{onEnd});
+      ).start(()=>{onEnd()});
     }
   }, [page, paused, isVisible, sentence, animations, isLoading]);
 
