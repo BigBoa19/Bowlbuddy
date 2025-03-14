@@ -61,6 +61,7 @@ const Play = () => {
   },[difficulties, categories]) 
 
   const fetchData = async () => {
+    
     Animated.timing(scaleValue, {
       toValue: 0,
       duration: 200,
@@ -78,6 +79,7 @@ const Play = () => {
       setSeen(1)
       appendQuestion()
     });
+    
   }
 
   const appendQuestion = async () => {
@@ -104,12 +106,14 @@ const Play = () => {
     } else {
       shiftValue.setValue(-380)
     }
-    //shiftValue.setValue(-380)
-    setFinished(prev => {
-      const newFinished = [...prev];
-      newFinished[currentPage-1] = true;
-      return newFinished
-    })
+
+    if (page > 0) {
+      setFinished(prev => {
+        const newFinished = [...prev];
+        newFinished[page - 1] = true;
+        return newFinished;
+      });
+    }
   };
 
   const handleSave = async (question: questions) => {
@@ -178,13 +182,14 @@ const Play = () => {
       // Update the viewedIndices array at the specific index
     } else {
       // If it's a previously viewed item, set the progress bar to "finished" and stop animation
-      shiftValue.setValue(0); // Set to 100%
-      shiftValue.stopAnimation(); // Stop any ongoing animation
+      if (currentPage > 0) {
+        shiftValue.setValue(0);
+        shiftValue.stopAnimation();
+      }
     }
   }
 
   const startProgressBar = () => {
-
     shiftValue.setValue(-380); // Reset to 0
     Animated.timing(shiftValue, {
       toValue: 0,
