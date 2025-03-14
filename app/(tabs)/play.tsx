@@ -29,14 +29,14 @@ const Play = () => {
 
   const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
-  const [readingSpeed, setReadingSpeed] = React.useState(300);
+  const [readingSpeed, setReadingSpeed] = React.useState(150);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const [ score, setScore ] = React.useState(0)
   const [ correct, setCorrect ] = React.useState<boolean[]>([]);
   const [ correctCount, setCorrectCount ] = React.useState(0);
   const [ seen, setSeen ] = React.useState(0)
-  const [ interrupts, setInterrupts ] = React.useState(0)
+  const [ interrupts, setInterrupts ] = React.useState(0);
   const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
   const [ answeredCount, setAnsweredCount ] = React.useState(0);
 
@@ -49,7 +49,7 @@ const Play = () => {
     if (difficulties && difficulties.length === 0) {
       setDifficulties(undefined);
     }
-  },[difficulties, categories]) // printing diff and cat
+  },[difficulties, categories]) 
 
   const fetchData = async () => {
     Animated.timing(scaleValue, {
@@ -106,6 +106,14 @@ const Play = () => {
       console.log(error);
     }
   }
+
+  const onBuzz = () => {
+    if(!showStart){
+      setAnimating(true);
+      setPaused(true);
+    }
+  }
+
 
   React.useEffect(() => {
     console.log("isAnimating:", isAnimating)
@@ -226,12 +234,7 @@ const Play = () => {
         {/* I NEED TO CHANGE THE CONDITION FOR BUZZ BEING AVAILABLE */}
         {/* COULD MAKE IT SO THAT ITS SLIGHTLY TRANSPARENT BEFORE PRESSING START BUTTON */}
         <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" 
-          onPress={
-            () => {
-              if(!showStart) {setAnimating(true)}
-            }
-          }
-        >
+          onPress={onBuzz}>
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
         {/* Saved icon */}

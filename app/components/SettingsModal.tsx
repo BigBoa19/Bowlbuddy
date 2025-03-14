@@ -122,7 +122,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     maximumTrackTintColor="#8a92eb"
                     thumbTintColor="#cccfff"
                     onValueChange={handleSpeedChange}
-                    value={300}
+                    value={150}
                 />
                 <View className='flex-row justify-between'>
                     <CustomButton 

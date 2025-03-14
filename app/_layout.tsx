@@ -34,6 +34,7 @@ export default function RootLayout() {
     "Gotham-XLight": require("../assets/fonts/Gotham-XLight.otf"),
     "Gotham-XLightItalic": require("../assets/fonts/Gotham-XLightItalic.otf"),
   });
+  
   React.useEffect(() => {
     if(error) throw error;
     if(fontsLoaded) SplashScreen.hideAsync();
