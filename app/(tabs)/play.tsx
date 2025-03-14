@@ -9,6 +9,7 @@ import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
 import { throwIfAudioIsDisabled } from 'expo-av/build/Audio/AudioAvailability'
+import Loading from '../loading'
 
 const Play = () => {
   const { isAnimating, setAnimating } = React.useContext(BuzzCircleContext);
@@ -36,9 +37,17 @@ const Play = () => {
   const [ correct, setCorrect ] = React.useState<boolean[]>([]);
   const [ correctCount, setCorrectCount ] = React.useState(0);
   const [ seen, setSeen ] = React.useState(0)
-  const [ interrupts, setInterrupts ] = React.useState(0);
   const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
   const [ answeredCount, setAnsweredCount ] = React.useState(0);
+  const [ finished, setFinished ] = React.useState<boolean[]>([]);
+
+  const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
+  
+  const shiftValue = React.useRef(new Animated.Value(-380)).current;
+  const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
+    inputRange: [-380, -190, 0], // Three stops: start, middle, end
+    outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
+  }))
 
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
@@ -64,6 +73,8 @@ const Play = () => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
       setAnswered([false])
+      setFinished([false])
+      setViewedIndices([false])
       setSeen(1)
       appendQuestion()
     });
@@ -76,7 +87,10 @@ const Play = () => {
     const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
     setAnswered(prev => [...prev, false])
+    setFinished(prev => [...prev, false])
     setCorrect(prev => [...prev, false])
+    setViewedIndices(prev => [...prev, false])
+  
     setIsLoading(false);
   };
 
@@ -85,6 +99,17 @@ const Play = () => {
     const page = Math.round(offsetY / height);
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
+    if(finished[currentPage]){
+      shiftValue.setValue(0)
+    } else {
+      shiftValue.setValue(-380)
+    }
+    //shiftValue.setValue(-380)
+    setFinished(prev => {
+      const newFinished = [...prev];
+      newFinished[currentPage-1] = true;
+      return newFinished
+    })
   };
 
   const handleSave = async (question: questions) => {
@@ -139,9 +164,34 @@ const Play = () => {
     }
   },[isAnimating])
 
-  React.useEffect(()=>{
+  const onViewableItemsChanged = () => {
+    console.log("Called:", isLoading)
+    if (!viewedIndices[currentPage]) {
+      if(!isLoading){
+        setViewedIndices((prev) => {
+          const newArray = [...prev];
+          newArray[currentPage] = true; // Mark the new index as viewed
+          console.log("Inside setViewedIndices:", newArray);
+          return newArray;
+        });
+      }
+      // Update the viewedIndices array at the specific index
+    } else {
+      // If it's a previously viewed item, set the progress bar to "finished" and stop animation
+      shiftValue.setValue(0); // Set to 100%
+      shiftValue.stopAnimation(); // Stop any ongoing animation
+    }
+  }
 
-  },[correct])
+  const startProgressBar = () => {
+
+    shiftValue.setValue(-380); // Reset to 0
+    Animated.timing(shiftValue, {
+      toValue: 0,
+      duration: 10000, // 10 seconds
+      useNativeDriver: true,
+    }).start();
+  };
 
   return (
     <SafeAreaView className='bg-background flex-1'>
@@ -178,17 +228,29 @@ const Play = () => {
       <View className="h-[1px] bg-tertiary" />
 
       {/* Score Board */}
-      <View className="flex-shrink mx-4 my-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md">
+      <View className="flex-shrink mx-4 mt-5 bg-primary border-tertiary border-2 rounded-lg p-3 px-5 shadow-md">
         <View className='flex-row justify-between'>
           <Text className="text-2xl text-tertiary text-left font-gBold">Score   {score}</Text>
           <Text className="text-2xl text-tertiary text-left font-gBold">Correct   {correctCount}/{answeredCount}</Text>
         </View>
-        <View className='flex-row justify-between'>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Interrupts   3</Text>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Seen   {seen}</Text>
+      </View>
+      {/* Answer and Timer Bar */}
+      <View className="flex-shrink mx-4 mb-3 mt-2.5">
+        <View className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
+          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>Answer</Text>
+        </View>
+        <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
+          <Animated.View
+            className='h-full rounded-full shadow-lg shadow-gray-900'
+            style={{
+              transform: [{ translateX:shiftValue }],
+              backgroundColor: barColor,
+              width: '100%', // Set the initial width to 100%
+              transformOrigin: 'left', // Ensure scaling starts from the left
+            }}
+          />
         </View>
       </View>
-
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
         { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
@@ -207,6 +269,10 @@ const Play = () => {
                 paused={paused}
                 isVisible={index === currentPage}
                 speed={readingSpeed}
+                onEnd={()=>{
+                  console.log("YO")
+                  startProgressBar()
+                }}
               />
 
               {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}
@@ -218,6 +284,7 @@ const Play = () => {
           onScroll={handleScroll}
           onEndReached={()=>{appendQuestion(); setSeen(prev=>prev+1)}}
           onEndReachedThreshold={0.5}
+          onViewableItemsChanged={onViewableItemsChanged}
         />}
          
       </View>
