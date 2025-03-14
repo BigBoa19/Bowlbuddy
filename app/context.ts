@@ -26,6 +26,11 @@ type PointsContextType = {
     points: number;
     setPoints: React.Dispatch<React.SetStateAction<number>>;
 };
+
+type STTContextType = {
+    startSTT: boolean;
+    setStartSTT: React.Dispatch<React.SetStateAction<boolean>>;
+}
   
 
 export const UserContext = createContext<UserContextType>({user: null });
@@ -49,4 +54,7 @@ export const PointsContext = createContext<PointsContextType>({
     setPoints: () => {}
 });
 
-
+export const STTContext = createContext<STTContextType>({
+    startSTT: false,
+    setStartSTT: () => {}
+});

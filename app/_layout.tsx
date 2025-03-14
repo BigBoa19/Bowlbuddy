@@ -1,6 +1,6 @@
 import { Stack, SplashScreen } from "expo-router";
 import "../global.css";
-import { QuestionContext, SettingsContext, UserContext,PointsContext } from "./context"; import useUserData from './functions/useUserData';
+import { QuestionContext, SettingsContext, UserContext, PointsContext, STTContext } from "./context"; import useUserData from './functions/useUserData';
 import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
@@ -11,7 +11,8 @@ export default function RootLayout() {
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [enableTimer, setEnableTimer] = React.useState(true);
   const [allowRebuzz, setAllowRebuzz] = React.useState(false);
-  const [points, setPoints] = React.useState(-1)
+  const [points, setPoints] = React.useState(-1);
+  const [startSTT, setStartSTT] = React.useState(false);
   const userData = useUserData();
 
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
     "Gotham-XLight": require("../assets/fonts/Gotham-XLight.otf"),
     "Gotham-XLightItalic": require("../assets/fonts/Gotham-XLightItalic.otf"),
   });
+  
   React.useEffect(() => {
     if(error) throw error;
     if(fontsLoaded) SplashScreen.hideAsync();
@@ -53,6 +55,8 @@ export default function RootLayout() {
       <QuestionContext.Provider value={{currentQuestion:currentQuestion, setCurrentQuestion:setCurrentQuestion}}>
       <BuzzCircleContext.Provider value={{ isAnimating:isAnimating, setAnimating:setIsAnimating }}>
       <UserContext.Provider value={{ user: userData.user }} >
+      <STTContext.Provider value={{startSTT:startSTT, setStartSTT:setStartSTT}}>
+      
       {/* Providers */}
 
         <Stack>
@@ -63,6 +67,7 @@ export default function RootLayout() {
         </Stack>
       
       {/* Providers */}
+      </STTContext.Provider>
       </UserContext.Provider>
       </BuzzCircleContext.Provider>
       </QuestionContext.Provider>
