@@ -17,7 +17,7 @@ import save from "../assets/icons/save.png"
 import multiplayer from "../assets/icons/multiplayer.png";
 import google from "../assets/icons/google.png"
 import google_colored from "../assets/icons/google_colored.png"
-
+import x from "../assets/icons/x-circle-icon.png"
 
 export default {
   play,
@@ -39,4 +39,5 @@ export default {
   pause2,
   google,
   google_colored,
+  x,
 };

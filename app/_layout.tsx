@@ -5,6 +5,7 @@ import { useFonts } from "expo-font";
 import React from "react";
 import { AlertNotificationRoot } from 'react-native-alert-notification';
 import { BuzzCircleContext } from "./context"
+import { Audio } from "expo-av";
 
 export default function RootLayout() {
   const [currentQuestion, setCurrentQuestion] = React.useState({_id:'', question:'', question_sanitized:'', answer:'',  answer_sanitized:''})
@@ -34,6 +35,17 @@ export default function RootLayout() {
     "Gotham-XLight": require("../assets/fonts/Gotham-XLight.otf"),
     "Gotham-XLightItalic": require("../assets/fonts/Gotham-XLightItalic.otf"),
   });
+
+  async function setAudioMode() {
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+    });
+    console.log("Audio Mode Set");
+  }
+
+  React.useEffect(() => {
+    setAudioMode();
+  },[])
   
   React.useEffect(() => {
     if(error) throw error;

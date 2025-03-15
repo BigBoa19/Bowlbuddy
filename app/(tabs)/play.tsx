@@ -42,6 +42,8 @@ const Play = () => {
   const [ finished, setFinished ] = React.useState<boolean[]>([]);
 
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
+
+  const [reset, setReset] = React.useState(false);
   
   const shiftValue = React.useRef(new Animated.Value(-380)).current;
   const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
@@ -139,7 +141,7 @@ const Play = () => {
   const onBuzz = () => {
     if(!showStart){
       setAnimating(true);
-      setPaused(true);
+      //setPaused(true);
     }
   }
 
@@ -168,6 +170,26 @@ const Play = () => {
     }
   },[isAnimating])
 
+  React.useEffect(() => {
+    if(reset){
+      console.log("Reset True");
+      setReset(false);
+      setCurrentQuestion(questions[0])
+      setAnswered([])
+      setFinished([])
+      setViewedIndices([])
+      setSeen(1)
+      setShowStart(true);
+      scaleValue.setValue(1);
+      setPaused(false);
+      setScore(0);
+      setCorrectCount(0);
+      setCurrentPage(0);
+      setQuestions([]);
+    }
+  },[reset])
+
+  //NOTE: IS THIS A GOOD WAY TO DO THIS?
   const onViewableItemsChanged = () => {
     console.log("Called:", isLoading)
     if (!viewedIndices[currentPage]) {
@@ -221,6 +243,7 @@ const Play = () => {
             allowRebuzz = {allowRebuzz}
             setAllowRebuzz={setAllowRebuzz}
             onSpeedChange={(val) => setReadingSpeed(val)}
+            setReset={setReset}
           />
         </Modal>
         <TouchableOpacity onPress={() => setModalVisible(true)}>

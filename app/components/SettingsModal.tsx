@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import CustomButton from './CustomButton';
 import Slider from '@react-native-community/slider';
 import { STTContext } from '../context';
+import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
+
 
 interface SettingsModalProps {
   difficulties: number[] | undefined;
@@ -15,6 +17,7 @@ interface SettingsModalProps {
   allowRebuzz: boolean;
   setAllowRebuzz: React.Dispatch<React.SetStateAction<boolean>>;
   onSpeedChange: (val: number) => void;
+  setReset: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -23,7 +26,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   setModalVisible,
   enableTimer, setEnableTimer,
   allowRebuzz, setAllowRebuzz,
-  onSpeedChange
+  onSpeedChange, setReset
 }) => {
     const { startSTT, setStartSTT } = React.useContext(STTContext);
     const [toggleDifficulties, setToggleDifficulties] = React.useState({
@@ -87,6 +90,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         }
     }, [categories, setCategories]);
 
+    const handleRestartPress = () => {
+        setReset(true);
+        Toast.show({
+            type: ALERT_TYPE.SUCCESS,
+            title: 'Game Restarted!',
+        })
+        setModalVisible(false);
+    }
+
     const handleSpeedChange = (val: number) => {onSpeedChange(val);}
 
     return (
@@ -141,10 +153,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         handlePress = {()=>{setAllowRebuzz(!allowRebuzz)}}
                     />
                 </View>
-                <CustomButton title='Speech To Text' 
+                <View className='flex-row justify-between'>
+                    <CustomButton title='Speech To Text' 
                         containerStyles='mt-5 ml-2'
                         isActive={startSTT}
                         handlePress = {()=>{setStartSTT(!startSTT)}}/>
+                    <CustomButton title='Restart Game' 
+                        containerStyles='mt-5 ml-2'
+                        handlePress = {handleRestartPress}/>
+                </View>
+                
                 <CustomButton title='Close' handlePress={() => setModalVisible(false)} containerStyles='mt-5' />
             </View>
         </View>

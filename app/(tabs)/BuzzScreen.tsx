@@ -1,11 +1,14 @@
 // BuzzScreen.tsx
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, Button, TouchableOpacity, TextInput, Animated } from 'react-native';
+import { View, Text, Button, TouchableOpacity, TextInput, Animated, Image } from 'react-native';
 import Voice from '@react-native-voice/voice';
 import { Audio } from 'expo-av';
 import { BuzzCircleContext, QuestionContext, SettingsContext, PointsContext, STTContext } from '../context';
 // @ts-ignore
 import checkAnswer from "../../node_modules/qb-answer-checker/src/check-answer.js";
+import CustomButton from '../components/CustomButton';
+import icons from '@/constants/icons';
+
 
 interface BuzzScreenProps {
   scaleValue: Animated.Value;
@@ -177,6 +180,13 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
     });
   };
 
+  const handleClear = () => {
+    setResults([]);
+    setInputAnswer('');
+  }
+  
+  
+
   return (
     <View className='flex-1 bg-secondary'>
       <Animated.View className='flex-1 justify-center' style={{ backgroundColor }}>
@@ -195,35 +205,40 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
               />
             </View>
           </View>
-          <Text className='text-white text-3xl text-center'>BuzzScreen</Text>
+          <Text className='text-tertiary text-3xl font-gBold text-center'>BuzzScreen</Text>
         </View>
 
         {/* Rest of it */}
         <View className='flex-1 items-center justify-center'>
-          {!started && <Button title='Start Speech to Text' onPress={startSpeechToText} />}
-          {started && <Button title='Stop Speech to Text' onPress={stopSpeechToText} />}
-          {results.map((result, index) => (
+          {!started && <CustomButton title='Start Speech to text' containerStyles='my-5'
+                        handlePress = {startSpeechToText}/>}
+          {started && <CustomButton title='Stop Speech to text' containerStyles='my-5'
+                        handlePress = {stopSpeechToText}/>}
+          {/* {results.map((result, index) => (
             <Text className='text-white text-xl' key={index}>
               {result}
             </Text>
-          ))}
-          <TextInput
-            value={inputAnswer}
-            placeholder='Answer Here'
-            onChangeText={setInputAnswer}
-            className='flex-row w-96 border-2 p-2 rounded-lg'
-            autoCorrect={false}
-            autoCapitalize='none'
-          />
-          <TouchableOpacity
-            className='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center bg-red-300 rounded-md'
-            onPress={() => answerCheck(inputAnswer)}
-          >
-            <Text className='font-gBold'>Submit Answer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onBuzzClose}>
-            <Text className='text-white text-3xl'>Close</Text>
-          </TouchableOpacity>
+          ))} */}
+          <View className='items-center relative'>
+            <TextInput
+              value={inputAnswer}
+              placeholder='Answer Here'
+              onChangeText={setInputAnswer}
+              className='flex-row w-96 border-2 p-2 rounded-lg'
+              autoCorrect={false}
+              autoCapitalize='none'
+            />
+            <TouchableOpacity onPress={handleClear}  className='absolute right-0 w-10 h-10 p-2'>
+            <Image source={icons.x} className='absolute right-0 w-10 h-10 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />
+            </TouchableOpacity>
+            
+          </View>
+          
+          <CustomButton handlePress={() => answerCheck(inputAnswer)} title='Submit Answer'
+          containerStyles='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center'/>
+
+
+          <CustomButton title='Close' containerStyles='mt-5' handlePress={onBuzzClose}/>
         </View>
         <View className='flex-1' />
       </Animated.View>
