@@ -18,6 +18,7 @@ import multiplayer from "../assets/icons/multiplayer.png";
 import google from "../assets/icons/google.png"
 import google_colored from "../assets/icons/google_colored.png"
 import x from "../assets/icons/x-circle-icon.png"
+import edit from "../assets/icons/pencil.png"
 
 export default {
   play,
@@ -40,4 +41,5 @@ export default {
   google,
   google_colored,
   x,
+  edit,
 };

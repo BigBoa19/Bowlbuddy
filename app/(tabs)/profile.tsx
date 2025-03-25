@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Image, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, Image, TouchableOpacity, Touchable, Modal } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import { auth } from '@/firebaseConfig'
@@ -21,6 +21,10 @@ const Profile = () => {
     }
   }
 
+  const changeName = () => {
+    //how do I set this
+  }
+
   return (
     <SafeAreaView className='bg-background flex-1'>
       {/* Top Text and Icon */}
@@ -30,19 +34,44 @@ const Profile = () => {
 
       {/* Border */}
       <View className="h-[1px] bg-tertiary mt-[8px]" />
-      <View className='flex-1 p-4 mt-2'>
-        <Text className='text-tertiary text-3xl font-gBook pb-5'>{user?.displayName}</Text>
-        <View className='flex-row bg-primary h-96 p-2 rounded-lg border-secondary border-2 shadow-lg' >
-
+      <View className='flex-1 p-4 mt-2 '>
+        {/* Profile Box */}
+        <View className='flex-column bg-primary h-[550px] p-4 rounded-lg border-secondary border-2 shadow-lg it' >
+          <View className='flex-row  items-center'>
+            {/* Make this max 10 Characters */}
+            <View className='flex-row w-60 items-center'>
+              <Text className='text-tertiary text-2xl font-gBold p-4' numberOfLines={1} adjustsFontSizeToFit={true}>
+                {user?.displayName}
+              </Text>
+              <TouchableOpacity onPress={()=>changeName()}>
+                <Image source={icons.edit} className='w-14 h-14 p-4 shadow-lg' style={{tintColor: '#8a92eb'}} resizeMode='contain' />
+              </TouchableOpacity>
+            </View>
+            {/* Profile Image? */}
+          </View>
+          <View className="h-[1px] bg-secondary mt-2 mb-3" />
+          {/* Other Profile Elements */}
+          <Text className='text-tertiary text-xl font-gBook p-2'>
+            Questions Seen:
+          </Text>
+          <Text className='text-tertiary text-xl font-gBook p-2'>
+            Correct Answers:
+          </Text>
+          <Text className='text-tertiary text-xl font-gBook p-2'>
+            Questions Seen:
+          </Text>
+         
         </View>
+        
+
         <TouchableOpacity onPress={SignOut}>
-          <View className='flex-row items-center shadow-lg shadow-red-700'>
-            <Image source={icons.logout} className='w-14 h-14 p-3 mt-2 shadow-lg shadow-[#cd1c18]' style={{tintColor: '#cd1c18'}} resizeMode='contain' />
+          <View className='flex-row items-center shadow-md shadow-red-900'>
+            <Image source={icons.logout} className='w-14 h-14 p-3 mt-2' style={{tintColor: '#cd1c18'}} resizeMode='contain' />
             <Text className='flex-1 pt-2 text-xl text-[#cd1c18] font-gBold'>Logout</Text>
           </View>
         </TouchableOpacity>
       </View>
-      
+
     
     </SafeAreaView>
   )
