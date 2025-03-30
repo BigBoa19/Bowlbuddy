@@ -36,7 +36,7 @@ const Profile = () => {
       <View className="h-[1px] bg-tertiary mt-[8px]" />
       <View className='flex-1 p-4 mt-2 '>
         {/* Profile Box */}
-        <View className='flex-column bg-primary h-[550px] p-4 rounded-lg border-secondary border-2 shadow-lg it' >
+        <View className='flex-column bg-primary h-[550px] p-4 rounded-lg border-secondary shadow-lg it' >
           <View className='flex-row  items-center'>
             {/* Make this max 10 Characters */}
             <View className='flex-row w-60 items-center'>
@@ -51,15 +51,31 @@ const Profile = () => {
           </View>
           <View className="h-[1px] bg-secondary mt-2 mb-3" />
           {/* Other Profile Elements */}
-          <Text className='text-tertiary text-xl font-gBook p-2'>
-            Questions Seen:
-          </Text>
-          <Text className='text-tertiary text-xl font-gBook p-2'>
-            Correct Answers:
-          </Text>
-          <Text className='text-tertiary text-xl font-gBook p-2'>
-            Questions Seen:
-          </Text>
+          <View className='flex-row items-center justify-between'>
+            <Text className='text-tertiary text-xl font-gBook p-2'>
+              Questions Seen
+            </Text>
+            <Text className='text-xl font-gBold text-tertiary pr-2'>55</Text>
+          </View>
+          <View className='flex-row items-center justify-between'>
+            <Text className='text-tertiary text-xl font-gBook p-2'>
+              Correct Answers
+            </Text>
+            <Text className='text-xl font-gBold text-tertiary pr-2'>38</Text>
+          </View>
+          <View className='flex-row items-center justify-between'>
+            <Text className='text-tertiary text-xl font-gBook p-2'>
+              Powers
+            </Text>
+            <Text className='text-xl font-gBold text-tertiary pr-2'>18</Text>
+          </View>
+          <View className='flex-row items-center'>
+            <Image source={icons.fire} className='w-14 h-14 shadow-lg mt-3' style={{tintColor: '#8a92eb'}} resizeMode='contain' />
+            <Text className='text-2xl font-gBold text-secondary mt-3'>Max Streak</Text>
+          </View>
+          <View className='flex-1 border-2 rounded-lg bg-'>
+
+          </View>
          
         </View>
         

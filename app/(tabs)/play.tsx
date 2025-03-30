@@ -280,7 +280,7 @@ const Play = () => {
         </View>
       </View>
       {/* Question Field */}
-      <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-md" >
+      <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-lg" >
         { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
           <TouchableOpacity onPress={() => {fetchData()}} className={"bg-tertiary rounded-xl p-4"} >
               <Text className={"text-secondary text-center text-lg font-gBold"}> Start </Text>

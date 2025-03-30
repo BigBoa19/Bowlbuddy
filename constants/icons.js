@@ -19,6 +19,7 @@ import google from "../assets/icons/google.png"
 import google_colored from "../assets/icons/google_colored.png"
 import x from "../assets/icons/x-circle-icon.png"
 import edit from "../assets/icons/pencil.png"
+import fire from "../assets/icons/fire.png"
 
 export default {
   play,
@@ -42,4 +43,5 @@ export default {
   google_colored,
   x,
   edit,
+  fire,
 };
