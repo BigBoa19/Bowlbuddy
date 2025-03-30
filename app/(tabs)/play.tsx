@@ -55,6 +55,8 @@ const Play = () => {
     console.log("Enable Timer:", enableTimer)
     console.log("Allow Rebuzz:", allowRebuzz)
   },[enableTimer,allowRebuzz])
+  
+  React.useEffect(()=>{console.log(finished)},[finished])
 
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
@@ -76,7 +78,7 @@ const Play = () => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
       setAnswered([false])
-      setFinished([false])
+      setFinished([false, false, false])
       setViewedIndices([false])
       setSeen(1)
       appendQuestion()
@@ -104,20 +106,31 @@ const Play = () => {
     const page = Math.round(offsetY / height);
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
-    if(finished[currentPage]){
-      shiftValue.setValue(0)
-    } else {
-      shiftValue.setValue(-380)
-    }
+    // if(finished[currentPage]){
+    //   shiftValue.setValue(0)
+    // } else {
+    //   shiftValue.setValue(-380)
+    // }
 
-    if (page > 0) {
+    if(viewedIndices[currentPage+1]){
       setFinished(prev => {
         const newFinished = [...prev];
-        newFinished[page - 1] = true;
+        newFinished[currentPage+1] = true;
+        return newFinished;
+      });
+    }
+    if (currentPage > 0) {
+      setFinished(prev => {
+        const newFinished = [...prev];
+        newFinished[currentPage-1] = true;
         return newFinished;
       });
     }
   };
+
+  React.useEffect(()=>{
+    setCurrentQuestion(questions[currentPage]);
+  },[currentPage])
 
   const handleSave = async (question: questions) => {
     try {
@@ -142,13 +155,13 @@ const Play = () => {
   const onBuzz = () => {
     if(!showStart){
       setAnimating(true);
-      //setPaused(true);
+      setPaused(true);
     }
   }
 
 
   React.useEffect(() => {
-    console.log("isAnimating:", isAnimating)
+    //console.log("isAnimating:", isAnimating)
     if (!isAnimating && points>-1) {
       if(!answered[currentPage]) {setAnsweredCount(prev => prev+1)}
       setAnswered(prev => {
@@ -173,7 +186,7 @@ const Play = () => {
 
   React.useEffect(() => {
     if(reset){
-      console.log("Reset True");
+      //console.log("Reset True");
       setReset(false);
       setCurrentQuestion(questions[0])
       setAnswered([])
@@ -192,7 +205,7 @@ const Play = () => {
 
   //NOTE: IS THIS A GOOD WAY TO DO THIS?
   const onViewableItemsChanged = () => {
-    console.log("Called:", isLoading)
+    //("Called:", isLoading)
     if (!viewedIndices[currentPage]) {
       if(!isLoading){
         setViewedIndices((prev) => {
@@ -290,7 +303,7 @@ const Play = () => {
           data={questions}
           keyExtractor={(item, index) => `${item._id}-${index}`}
           renderItem={({item, index}) => (
-            <View>
+          <View>
               <FocusedTextAnimator 
                 sentence={item.question_sanitized} 
                 height={height} 
@@ -298,10 +311,10 @@ const Play = () => {
                 paused={paused}
                 isVisible={index === currentPage}
                 speed={readingSpeed}
+                
               />
-
-              {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}
-            </View>
+          </View>
+            
           )}
           pagingEnabled={true}
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
