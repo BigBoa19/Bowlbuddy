@@ -103,7 +103,7 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
               // For words that haven't started, calculate remaining delay.
               const elapsedSincePause = Date.now() - pauseTimeRef.current;
               const fullDelay = scheduledStartTimes.current[i] - pauseTimeRef.current;
-              const remainingDelay = Math.max(fullDelay - elapsedSincePause, 0);
+              const remainingDelay = Math.max(fullDelay, 0); //originally fullDelay-elapsedSincePause, what was the logic behind the difference? Wouldn't it have to be fullDelay - (the amount of delay passed through the animation?) I did a very primitive fix for now.
               startWordAnimation(i, remainingDelay);
             }
           }

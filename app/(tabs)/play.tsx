@@ -99,6 +99,7 @@ const Play = () => {
   };
 
   const handleScroll = (event: any) => {
+    setPaused(false)
     const offsetY = event.nativeEvent.contentOffset.y;
     const page = Math.round(offsetY / height);
     setCurrentPage(page);
@@ -297,10 +298,6 @@ const Play = () => {
                 paused={paused}
                 isVisible={index === currentPage}
                 speed={readingSpeed}
-                onEnd={()=>{
-                  console.log("YO")
-                  startProgressBar()
-                }}
               />
 
               {/* <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> */}
@@ -320,7 +317,7 @@ const Play = () => {
       {/* Buttons */}
       <View className='flex-row justify-between'>
         {/* Pause Icon */}
-        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(!paused)}>
+        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(prev=>!prev)}>
           <Image source={paused? icons.play2: icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
         {/* Buzz Screen Modal */}
