@@ -25,6 +25,10 @@ const Profile = () => {
     //how do I set this
   }
 
+  const changeBio = () => {
+    //this too
+  }
+
   return (
     <SafeAreaView className='bg-background flex-1'>
       {/* Top Text and Icon */}
@@ -73,7 +77,13 @@ const Profile = () => {
             <Image source={icons.fire} className='w-14 h-14 shadow-lg mt-3' style={{tintColor: '#8a92eb'}} resizeMode='contain' />
             <Text className='text-2xl font-gBold text-secondary mt-3'>Max Streak</Text>
           </View>
-          <View className='flex-1 border-2 rounded-lg bg-'>
+          <View className='mt-2 shadow-md flex-row items-center'>
+            <Text className='text-tertiary text-xl font-gBold p-2'>Bio</Text>
+            <TouchableOpacity onPress={()=>changeBio()}>
+                <Image source={icons.edit} className='w-12 h-12 p-4 shadow-lg' style={{tintColor: '#8a92eb'}} resizeMode='contain' />
+              </TouchableOpacity>
+          </View>
+          <View className='flex-1 m-1.5 shadow-md rounded-lg bg-background '>
 
           </View>
          
