@@ -3,17 +3,13 @@ import React, { useState, useRef } from 'react';
 import icons from '@/constants/icons';
 import { useLocalSearchParams, router } from 'expo-router';
 
-const SavedQuestion = () => {
+const SavedQuestion = ({question, answer, onClose}:any) => {
   const handleGoBack = () => { 
-    router.navigate("/(tabs)/saved"); 
     if(flipped) {
       flipCard();
     }
+    onClose()
   };
-  const { question, answer } = useLocalSearchParams<{
-    question: string;
-    answer: string;
-  }>();
 
   const [flipped, setFlipped] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
