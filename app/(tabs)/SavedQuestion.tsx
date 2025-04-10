@@ -1,14 +1,56 @@
-import { Text, View, SafeAreaView, TouchableOpacity, Image, Animated } from 'react-native';
+import { Text, View, SafeAreaView, TouchableOpacity, Image, Animated, Alert } from 'react-native';
 import React, { useState, useRef } from 'react';
 import icons from '@/constants/icons';
 import { useLocalSearchParams, router } from 'expo-router';
+import { db } from '../../firebaseConfig';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { UserContext } from '../context';
+import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 
-const SavedQuestion = ({question, answer, onClose}:any) => {
+const SavedQuestion = ({question, answer, onClose, questionId}:any) => {
+  const { user } = React.useContext(UserContext);
+
   const handleGoBack = () => { 
     if(flipped) {
       flipCard();
     }
     onClose()
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Question",
+      "Are you sure you want to delete this question?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              if (!user?.uid) return;
+              const usersDocRef = doc(db, 'users', user.uid);
+              const savedQuestionRef = doc(usersDocRef, 'savedQuestions', questionId);
+              await deleteDoc(savedQuestionRef);
+              Toast.show({
+                type: ALERT_TYPE.SUCCESS,
+                title: 'Question Deleted!',
+              });
+              onClose();
+            } catch (error) {
+              console.error('Error deleting question:', error);
+              Toast.show({
+                type: ALERT_TYPE.DANGER,
+                title: 'Failed to delete question',
+              });
+            }
+          }
+        }
+      ]
+    );
   };
 
   const [flipped, setFlipped] = useState(false);
@@ -57,14 +99,24 @@ const SavedQuestion = ({question, answer, onClose}:any) => {
 
   return (
     <SafeAreaView className='bg-background flex-1'>
-      <TouchableOpacity onPress={handleGoBack} className='p-4'>
-        <Image 
-          source={icons.leftArrow}
-          resizeMode='contain' 
-          className='w-[20px] h-[20px]' 
-          tintColor={"#ccccff"} 
-        />
-      </TouchableOpacity>
+      <View className='flex-row justify-between items-center p-4'>
+        <TouchableOpacity onPress={handleGoBack}>
+          <Image 
+            source={icons.leftArrow}
+            resizeMode='contain' 
+            className='w-[20px] h-[20px]' 
+            tintColor={"#ccccff"} 
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleDelete}>
+          <Image 
+            source={icons.trash}
+            resizeMode='contain' 
+            className='w-[20px] h-[20px]' 
+            tintColor={"#ff4444"} 
+          />
+        </TouchableOpacity>
+      </View>
       <View className='flex-1 justify-center px-3'>
       <TouchableOpacity onPress={flipCard}>
         <View className='items-center justify-center'>

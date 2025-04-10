@@ -38,17 +38,35 @@ const SignIn = () => {
   },[response])
 
   return (
-    <SafeAreaView className=' bg-secondary h-full'>
-      <View className="flex-1 justify-between pt-2 px-4">
-        <Text className="text-primary text-3xl font-gBold">BowlBuddy</Text>
-        <TouchableOpacity onPress={() => promptAsync()} className="flex-row items-center justify-center bg-white p-4 rounded-lg mt-2 shadow-lg">
+    <SafeAreaView className='bg-background flex-1'>
+      <View className="flex-1 justify-between p-4">
+        <View className="items-center mt-20">
+          <Image
+            source={icons.play2}
+            className="w-32 h-32 mb-4"
+            style={{ tintColor: '#8a92eb' }}
+            resizeMode="contain"
+          />
+          <Text className="text-tertiary text-4xl font-gBold">BowlBuddy</Text>
+          <Text className="text-tertiary text-xl font-gBold text-center mt-4 px-6">
+            Your personal quiz bowl companion.{'\n\n'}
+            <Text className="text-[#8a92eb]">Practice questions</Text>{'\n'}
+            <Text className="text-[#8a92eb]">Gain knowledge</Text>{'\n'}
+            <Text className="text-[#8a92eb]">Win tournaments</Text>
+          </Text>
+        </View>
+
+        <TouchableOpacity 
+          onPress={() => promptAsync()} 
+          className="flex-row items-center justify-center bg-primary p-4 rounded-xl mb-10 shadow-lg border-2 border-[#8a92eb]"
+        >
           <Image
             source={icons.google}
             resizeMode="contain"
             tintColor="none"
             className='w-10 h-10 mb-0.5'
           />
-          <Text className="text-primary font-gBook text-xl ml-2 ">
+          <Text className="text-white font-gBook text-xl ml-2">
             Continue with
           </Text>
           <Text className='text-[#4285f4] font-gBold text-2xl ml-2'>G</Text>
@@ -62,6 +80,5 @@ const SignIn = () => {
     </SafeAreaView>
   )
 }
-
 
 export default SignIn

@@ -18,12 +18,6 @@ import Animated, {
 
 const { width } = Dimensions.get('window');
 
-// Function to randomly pick a border color
-const getRandomBorderColor = () => {
-  const colors = ['border-secondary', 'border-tertiary'];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
-
 const Item = ({props, show, setShow}:any) => {
   // Create a shared value for the animation
   const translateX = useSharedValue(width);
@@ -82,6 +76,7 @@ const Item = ({props, show, setShow}:any) => {
                   question: props.question_sanitized,
                   answer: props.answer_sanitized,
                   onClose: handleClose,
+                  questionId: props._id,
                 }}
               />
             </View>
@@ -90,7 +85,7 @@ const Item = ({props, show, setShow}:any) => {
       </Modal>
       
       <View
-        className={`flex-row items-center p-5 bg-primary mt-3 border-2 ${getRandomBorderColor()} shadow-md rounded-xl`}
+        className="flex-row items-center p-5 bg-primary mt-3 border-2 border-[#8a92eb] shadow-md rounded-xl"
       >
         <View className="flex-1 mr-4">
           <Text

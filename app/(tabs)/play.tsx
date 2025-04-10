@@ -40,7 +40,7 @@ const Play = () => {
   const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
   const [ answeredCount, setAnsweredCount ] = React.useState(0);
   const [ finished, setFinished ] = React.useState<boolean[]>([]);
-
+  const [ showAnswer, setShowAnswer ] = React.useState(false);
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
 
   const [reset, setReset] = React.useState(false);
@@ -66,6 +66,7 @@ const Play = () => {
 
   const fetchData = async () => {
     
+    //
     Animated.timing(scaleValue, {
       toValue: 0,
       duration: 200,
@@ -205,25 +206,26 @@ const Play = () => {
 
   //NOTE: IS THIS A GOOD WAY TO DO THIS?
   const onViewableItemsChanged = () => {
-    //("Called:", isLoading)
-    if (!viewedIndices[currentPage]) {
-      if(!isLoading){
+    if (!isLoading) {
+      // When scrolling forward (to a newer question)
+      if (currentPage > 0) {
         setViewedIndices((prev) => {
           const newArray = [...prev];
-          newArray[currentPage] = true; // Mark the new index as viewed
-          console.log("Inside setViewedIndices:", newArray);
+          newArray[currentPage - 1] = true; // Mark the previous question as viewed
           return newArray;
         });
       }
-      // Update the viewedIndices array at the specific index
-    } else {
-      // If it's a previously viewed item, set the progress bar to "finished" and stop animation
-      if (currentPage > 0) {
-        shiftValue.setValue(0);
-        shiftValue.stopAnimation();
+      
+      // When scrolling backward (to an older question)
+      if (currentPage < seen - 1) {
+        setViewedIndices((prev) => {
+          const newArray = [...prev];
+          newArray[currentPage + 1] = true; // Mark the newer question as viewed
+          return newArray;
+        });
       }
     }
-  }
+  };
 
   const startProgressBar = () => {
     shiftValue.setValue(-380); // Reset to 0
@@ -231,7 +233,12 @@ const Play = () => {
       toValue: 0,
       duration: 10000, // 10 seconds
       useNativeDriver: true,
-    }).start();
+    }).start(({finished}) => {
+      // When the animation is finished
+      if (finished) {
+        setShowAnswer(true);
+      }
+    });
   };
 
   return (
@@ -279,7 +286,7 @@ const Play = () => {
       {/* Answer and Timer Bar */}
       <View className="flex-shrink mx-4 mb-3 mt-2.5">
         <View className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
-          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>Answer</Text>
+          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : 'Answer'}</Text>
         </View>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
@@ -311,7 +318,13 @@ const Play = () => {
                 paused={paused}
                 isVisible={index === currentPage}
                 speed={readingSpeed}
-                
+                wasSeen={index < currentPage || viewedIndices[index]}
+                onEnd={() => {
+                  if (index === currentPage && !paused) {
+                    console.log("Starting Progress Bar");
+                    startProgressBar();
+                  }
+                }}
               />
           </View>
             
