@@ -46,17 +46,15 @@ const Play = () => {
   const [reset, setReset] = React.useState(false);
   
   const shiftValue = React.useRef(new Animated.Value(-380)).current;
-  const [barColor, setBarColor] = React.useState(shiftValue.interpolate({
-    inputRange: [-380, -190, 0], // Three stops: start, middle, end
-    outputRange: ['#66ff00', '#ffff00', '#e61d06'], // Green -> Yellow -> Red
-  }))
+  const barColor = '#ccccff';
 
   React.useEffect(()=>{
     console.log("Enable Timer:", enableTimer)
     console.log("Allow Rebuzz:", allowRebuzz)
   },[enableTimer,allowRebuzz])
   
-  React.useEffect(()=>{console.log(finished)},[finished])
+  React.useEffect(()=>{console.log("Finished:", finished)},[finished])
+  React.useEffect(()=>{console.log("Viewed Indices:", viewedIndices)},[viewedIndices])
 
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
@@ -107,11 +105,13 @@ const Play = () => {
     const page = Math.round(offsetY / height);
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
-    // if(finished[currentPage]){
-    //   shiftValue.setValue(0)
-    // } else {
-    //   shiftValue.setValue(-380)
-    // }
+    
+    // Set shiftValue to 0 if the question was already visited, otherwise -380
+    if (viewedIndices[page]) {
+      shiftValue.setValue(0); // Already visited, show full progress bar
+    } else {
+      shiftValue.setValue(-380); // New question, reset progress bar
+    }
 
     if(viewedIndices[currentPage+1]){
       setFinished(prev => {
@@ -228,6 +228,11 @@ const Play = () => {
   };
 
   const startProgressBar = () => {
+    // Don't start animation if the question has already been viewed
+    if (viewedIndices[currentPage]) {
+      return;
+    }
+    
     shiftValue.setValue(-380); // Reset to 0
     Animated.timing(shiftValue, {
       toValue: 0,
@@ -320,7 +325,7 @@ const Play = () => {
                 speed={readingSpeed}
                 wasSeen={index < currentPage || viewedIndices[index]}
                 onEnd={() => {
-                  if (index === currentPage && !paused) {
+                  if (index === currentPage && !paused && !viewedIndices[index]) {
                     console.log("Starting Progress Bar");
                     startProgressBar();
                   }
