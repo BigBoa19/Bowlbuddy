@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View } from 'react-native';
 import Animated, {
   runOnJS,
@@ -9,6 +9,29 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated';
 
+// Memoized word component to prevent unnecessary re-renders
+const AnimatedWord = React.memo(({ 
+  word, 
+  opacity, 
+  index 
+}: { 
+  word: string; 
+  opacity: Animated.SharedValue<number>; 
+  index: number;
+}) => {
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }), []);
+
+  return (
+    <Animated.Text 
+      className="text-sm text-secondary text-left font-gBook"
+      style={[{ marginRight: 5 }, animatedStyle]}
+    >
+      {word}{''}
+    </Animated.Text>
+  );
+});
 
 type TextAnimatorProps = {
   sentence: string;
@@ -23,7 +46,7 @@ type TextAnimatorProps = {
 
 const fadeDuration = 100; // each word fades in over 100ms
 
-const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
+const TextAnimatorReanimated: React.FC<TextAnimatorProps> = React.memo(({
   sentence,
   height,
   page,
@@ -34,15 +57,15 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
   wasSeen = false,
 }) => {
     
-  const words = sentence.split(' ');
+  const words = useMemo(() => sentence.split(' '), [sentence]);
   // Shared opacity values for each word.
   const opacities = useRef(words.map(() => useSharedValue(0))).current;
   // Track whether a word's animation has actually started (i.e. after its delay).
-  const started = useRef(new Array(words.length).fill(false));
+  const started = useRef<boolean[]>(new Array(words.length).fill(false)).current;
   // Record the scheduled start time (in JS time) for each word.
-  const scheduledStartTimes = useRef<number[]>([]);
+  const scheduledStartTimes = useRef<number[]>([]).current;
   // Hold the timeout IDs for marking a word as started.
-  const startTimeouts = useRef<(NodeJS.Timeout | number)[]>([]);
+  const startTimeouts = useRef<(NodeJS.Timeout | number)[]>([]).current;
   // Global pause time (in milliseconds) from JS Date.
   const pauseTimeRef = useRef(0);
   const prevPaused = useRef(paused);
@@ -51,11 +74,11 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
 
   // Helper: The animation for each individual word with a given delay.
   const startWordAnimation = (i: number, delay: number) => {
-    scheduledStartTimes.current[i] = Date.now() + delay;
-    started.current[i] = false;
+    scheduledStartTimes[i] = Date.now() + delay;
+    started[i] = false;
     // Mark the word as started after the delay.
-    startTimeouts.current[i] = setTimeout(() => {
-      started.current[i] = true;
+    startTimeouts[i] = setTimeout(() => {
+      started[i] = true;
     }, delay);
     // Start the animation with delay.
     opacities[i].value = withDelay(delay, withTiming(1, { duration: fadeDuration }, (finished) => {
@@ -70,11 +93,11 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
   // Reset animations
   useEffect(() => {
     // Clear any pending timeouts.
-    startTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
-    scheduledStartTimes.current = [];
+    startTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+    scheduledStartTimes.length = 0;
     words.forEach((_, i) => {
       opacities[i].value = wasSeen ? 1 : 0;
-      started.current[i] = wasSeen;
+      started[i] = wasSeen;
     });
     if (isVisible && !wasSeen) {
       words.forEach((_, i) => {
@@ -97,15 +120,15 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
         words.forEach((_, i) => {
           cancelAnimation(opacities[i]);
           // Cancel pending timeouts for words that haven't started.
-          if (!started.current[i] && startTimeouts.current[i]) {
-            clearTimeout(startTimeouts.current[i]);
+          if (!started[i] && startTimeouts[i]) {
+            clearTimeout(startTimeouts[i]);
           }
         });
       } else {
         // On RESUME: for each word, decide how to restart its animation.
         words.forEach((_, i) => {
           if (opacities[i].value < 1) {
-            if (started.current[i]) {
+            if (started[i]) {
               // For words that have already started, resume from the current progress.
               const current = opacities[i].value;
               const remainingDuration = fadeDuration * (1 - current);
@@ -119,8 +142,8 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
               });
             } else {
               // For words that haven't started, calculate remaining delay.
-              const fullDelay = scheduledStartTimes.current[i] - pauseTimeRef.current;
-              const remainingDelay = Math.max(fullDelay, 0); //originally fullDelay-elapsedSincePause, what was the logic behind the difference? Wouldn't it have to be fullDelay - (the amount of delay passed through the animation?) I did a very primitive fix for now.
+              const fullDelay = scheduledStartTimes[i] - pauseTimeRef.current;
+              const remainingDelay = Math.max(fullDelay, 0);
               startWordAnimation(i, remainingDelay);
             }
           }
@@ -132,19 +155,16 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
 
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', height }}>
-      {words.map((word, i) => {
-        const animatedStyle = useAnimatedStyle(() => ({
-          opacity: opacities[i].value,
-        }));
-        return (
-          <Animated.Text className="text-sm text-secondary text-left font-gBook"
-                         key={i} style={[{ marginRight: 5 }, animatedStyle]}>
-            {word}{''}
-          </Animated.Text>
-        );
-      })}
+      {words.map((word, i) => (
+        <AnimatedWord
+          key={`${word}-${i}`}
+          word={word}
+          opacity={opacities[i]}
+          index={i}
+        />
+      ))}
     </View>
   );
-};
+});
 
 export default TextAnimatorReanimated;

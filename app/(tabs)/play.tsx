@@ -11,6 +11,41 @@ import SettingsModal from '../components/SettingsModal'
 import { throwIfAudioIsDisabled } from 'expo-av/build/Audio/AudioAvailability'
 import Loading from '../loading'
 
+const QuestionItem = React.memo(({ 
+  item, 
+  index, 
+  currentPage, 
+  height, 
+  paused, 
+  readingSpeed, 
+  viewedIndices, 
+  onEnd 
+}: { 
+  item: questions; 
+  index: number; 
+  currentPage: number; 
+  height: number; 
+  paused: boolean; 
+  readingSpeed: number; 
+  viewedIndices: boolean[]; 
+  onEnd: () => void;
+}) => {
+  return (
+    <View>
+      <FocusedTextAnimator 
+        sentence={item.question_sanitized} 
+        height={height} 
+        page={currentPage} 
+        paused={paused}
+        isVisible={index === currentPage}
+        speed={readingSpeed}
+        wasSeen={index < currentPage || viewedIndices[index]}
+        onEnd={onEnd}
+      />
+    </View>
+  );
+});
+
 const Play = () => {
   const { isAnimating, setAnimating } = React.useContext(BuzzCircleContext);
   const { enableTimer, setEnableTimer, allowRebuzz, setAllowRebuzz } = React.useContext(SettingsContext);
@@ -36,26 +71,15 @@ const Play = () => {
   const [ score, setScore ] = React.useState(0)
   const [ correct, setCorrect ] = React.useState<boolean[]>([]);
   const [ correctCount, setCorrectCount ] = React.useState(0);
-  const [ seen, setSeen ] = React.useState(0)
   const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
   const [ answeredCount, setAnsweredCount ] = React.useState(0);
-  const [ finished, setFinished ] = React.useState<boolean[]>([]);
   const [ showAnswer, setShowAnswer ] = React.useState(false);
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
-
   const [reset, setReset] = React.useState(false);
   
   const shiftValue = React.useRef(new Animated.Value(-380)).current;
-  const barColor = '#ccccff';
-
-  React.useEffect(()=>{
-    console.log("Enable Timer:", enableTimer)
-    console.log("Allow Rebuzz:", allowRebuzz)
-  },[enableTimer,allowRebuzz])
+  const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
   
-  React.useEffect(()=>{console.log("Finished:", finished)},[finished])
-  React.useEffect(()=>{console.log("Viewed Indices:", viewedIndices)},[viewedIndices])
-
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
       setDifficulties(undefined);
@@ -63,8 +87,7 @@ const Play = () => {
   },[difficulties, categories]) 
 
   const fetchData = async () => {
-    
-    //
+    // Animate the scale of the start button
     Animated.timing(scaleValue, {
       toValue: 0,
       duration: 200,
@@ -77,9 +100,7 @@ const Play = () => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
       setAnswered([false])
-      setFinished([false, false])
       setViewedIndices([false])
-      setSeen(1)
       appendQuestion()
     });
     
@@ -97,7 +118,6 @@ const Play = () => {
     }
     setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
     setAnswered(prev => [...prev, false])
-    setFinished(prev => [...prev, false])
     setCorrect(prev => [...prev, false])
     setViewedIndices(prev => [...prev, false])
   
@@ -108,29 +128,32 @@ const Play = () => {
     setPaused(false)
     const offsetY = event.nativeEvent.contentOffset.y;
     const page = Math.round(offsetY / height);
+    
+    // Stop the progress bar animation when scrolling to a new page
+    if (page !== currentPage) {
+      stopProgressBar();
+      
+      // Mark the previous page as viewed when scrolling to a new page
+      setViewedIndices((prev) => {
+        const newArray = [...prev];
+        if (!newArray[currentPage]) {
+          newArray[currentPage] = true;
+          console.log(`Marking question ${currentPage} as viewed`);
+        }
+        return newArray;
+      });
+    }
+    
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
     
-    // Set shiftValue to 0 if the question was already visited, otherwise -380
+    // Show answer immediately if the question has been viewed before
     if (viewedIndices[page]) {
-      shiftValue.setValue(0); // Already visited, show full progress bar
+      shiftValue.setValue(0); 
+      setShowAnswer(true);
     } else {
-      shiftValue.setValue(-380); // New question, reset progress bar
-    }
-
-    if(viewedIndices[currentPage+1]){
-      setFinished(prev => {
-        const newFinished = [...prev];
-        newFinished[currentPage+1] = true;
-        return newFinished;
-      });
-    }
-    if (currentPage > 0) {
-      setFinished(prev => {
-        const newFinished = [...prev];
-        newFinished[currentPage-1] = true;
-        return newFinished;
-      });
+      shiftValue.setValue(-380);
+      setShowAnswer(false);
     }
   };
 
@@ -196,9 +219,7 @@ const Play = () => {
       setReset(false);
       setCurrentQuestion(questions[0])
       setAnswered([])
-      setFinished([])
-      setViewedIndices([])
-      setSeen(1)
+      setViewedIndices([]) 
       setShowStart(true);
       scaleValue.setValue(1);
       setPaused(false);
@@ -209,46 +230,37 @@ const Play = () => {
     }
   },[reset])
 
-  //NOTE: IS THIS A GOOD WAY TO DO THIS?
-  const onViewableItemsChanged = () => {
-    if (!isLoading) {
-      // When scrolling forward (to a newer question)
-      if (currentPage > 0) {
-        setViewedIndices((prev) => {
-          const newArray = [...prev];
-          newArray[currentPage - 1] = true; // Mark the previous question as viewed
-          return newArray;
-        });
-      }
-      
-      // When scrolling backward (to an older question)
-      if (currentPage < seen - 1) {
-        setViewedIndices((prev) => {
-          const newArray = [...prev];
-          newArray[currentPage + 1] = true; // Mark the newer question as viewed
-          return newArray;
-        });
-      }
-    }
-  };
-
   const startProgressBar = () => {
     // Don't start animation if the question has already been viewed
     if (viewedIndices[currentPage]) {
       return;
     }
-    
+    console.log("Starting Progress Bar");
     shiftValue.setValue(-380); // Reset to 0
-    Animated.timing(shiftValue, {
+    
+    // Store the animation reference so we can stop it later
+    progressBarAnimation.current = Animated.timing(shiftValue, {
       toValue: 0,
       duration: 10000, // 10 seconds
       useNativeDriver: true,
-    }).start(({finished}) => {
+    });
+    
+    progressBarAnimation.current.start(({finished}) => {
       // When the animation is finished
       if (finished) {
         setShowAnswer(true);
       }
     });
+  };
+  
+  const stopProgressBar = () => {
+    // Stop the progress bar animation if it's running
+    if (progressBarAnimation.current) {
+      progressBarAnimation.current.stop();
+      progressBarAnimation.current = null;
+      shiftValue.setValue(-380); // Reset to initial position
+      setShowAnswer(false); // Hide the answer
+    }
   };
 
   return (
@@ -303,7 +315,7 @@ const Play = () => {
             className='h-full rounded-full shadow-lg shadow-gray-900'
             style={{
               transform: [{ translateX:shiftValue }],
-              backgroundColor: barColor,
+              backgroundColor: '#ccccff',
               width: '100%', // Set the initial width to 100%
               transformOrigin: 'left', // Ensure scaling starts from the left
             }}
@@ -320,32 +332,30 @@ const Play = () => {
           data={questions}
           keyExtractor={(item, index) => `${item._id}-${index}`}
           renderItem={({item, index}) => (
-          <View>
-              <FocusedTextAnimator 
-                sentence={item.question_sanitized} 
-                height={height} 
-                page={currentPage} 
-                paused={paused}
-                isVisible={index === currentPage}
-                speed={readingSpeed}
-                wasSeen={index < currentPage || viewedIndices[index]}
-                onEnd={() => {
-                  if (index === currentPage && !paused && !viewedIndices[index]) {
-                    console.log("Starting Progress Bar");
-                    startProgressBar();
-                  }
-                }}
-              />
-          </View>
-            
+            <QuestionItem
+              item={item}
+              index={index}
+              currentPage={currentPage}
+              height={height}
+              paused={paused}
+              readingSpeed={readingSpeed}
+              viewedIndices={viewedIndices}
+              onEnd={() => {
+                if (index === currentPage && !paused) {
+                  startProgressBar();
+                }
+              }}
+            />
           )}
           pagingEnabled={true}
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
-          onEndReached={()=>{appendQuestion(); setSeen(prev=>prev+1)}}
+          onEndReached={()=>{appendQuestion()}}
           onEndReachedThreshold={0.5}
-          onViewableItemsChanged={onViewableItemsChanged}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={3}
+          windowSize={3}
         />}
          
       </View>
