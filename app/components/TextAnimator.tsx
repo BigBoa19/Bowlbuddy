@@ -33,6 +33,7 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = ({
   onEnd,
   wasSeen = false,
 }) => {
+    
   const words = sentence.split(' ');
   // Shared opacity values for each word.
   const opacities = useRef(words.map(() => useSharedValue(0))).current;

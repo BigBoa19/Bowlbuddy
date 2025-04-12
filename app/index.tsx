@@ -3,6 +3,7 @@ import { UserContext } from './context';
 import { router } from "expo-router"
 import SignIn from "./(auth)/sign-in"
 import SplashScreen from './components/SplashScreen';
+import { View } from 'react-native';
 
 export default function Index() {
   const { user } = React.useContext(UserContext);
@@ -20,5 +21,5 @@ export default function Index() {
     return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
   
-  return <SignIn />;
+  return user ? <View style={{ flex: 1, backgroundColor: '#252537' }} /> : <SignIn />;
 }

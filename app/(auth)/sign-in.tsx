@@ -42,9 +42,8 @@ const SignIn = () => {
       <View className="flex-1 justify-between p-4">
         <View className="items-center mt-20">
           <Image
-            source={icons.play2}
+            source={require('../../assets/icons/logo.png')}
             className="w-32 h-32 mb-4"
-            style={{ tintColor: '#8a92eb' }}
             resizeMode="contain"
           />
           <Text className="text-tertiary text-4xl font-gBold">BowlBuddy</Text>

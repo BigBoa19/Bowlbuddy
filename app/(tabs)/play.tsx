@@ -77,7 +77,7 @@ const Play = () => {
       setQuestions(questions)
       setCurrentQuestion(questions[0])
       setAnswered([false])
-      setFinished([false, false, false])
+      setFinished([false, false])
       setViewedIndices([false])
       setSeen(1)
       appendQuestion()
@@ -89,7 +89,12 @@ const Play = () => {
     if (isLoading) return;
   
     setIsLoading(true);
-    const newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
+    let newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
+    // Check if question is too long (over 1000 characters)
+    while (newQuestion[0].question_sanitized.length > 900) {
+      // Recursively fetch another question if too long
+      newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
+    }
     setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
     setAnswered(prev => [...prev, false])
     setFinished(prev => [...prev, false])
