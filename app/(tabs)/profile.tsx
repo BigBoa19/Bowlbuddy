@@ -5,7 +5,7 @@ import { auth, db } from '@/firebaseConfig'
 import { signOut, updateProfile } from 'firebase/auth'
 import { useRouter } from 'expo-router'
 import { UserContext } from '../context';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import CustomButton from '../components/CustomButton';
 interface EditModalProps {
@@ -74,6 +74,9 @@ const Profile = () => {
   const [newName, setNewName] = React.useState('');
   const [newBio, setNewBio] = React.useState('');
   const [currentBio, setCurrentBio] = React.useState('');
+  const [totalScore, setTotalScore] = React.useState(0);
+  const [totalCorrect, setTotalCorrect] = React.useState(0);
+  const [totalSeen, setTotalSeen] = React.useState(0);
 
   React.useEffect(() => {
     const fetchBio = async () => {
@@ -85,6 +88,23 @@ const Profile = () => {
       }
     };
     fetchBio();
+  }, [user]);
+
+  React.useEffect(() => {
+    if (!user?.uid) return;
+
+    const userDocRef = doc(db, 'users', user.uid);
+    
+    const unsubscribe = onSnapshot(userDocRef, (doc) => {
+      if (doc.exists()) {
+        const statsData = doc.data();
+        setTotalScore(statsData.totalScore || 0);
+        setTotalCorrect(statsData.totalCorrect || 0);
+        setTotalSeen(statsData.totalSeen || 0);
+      }
+    });
+
+    return () => unsubscribe();
   }, [user]);
 
   const SignOut = async () => {
@@ -186,14 +206,10 @@ const Profile = () => {
 
           <View className="h-[1px] bg-secondary mt-2 mb-3" />
           
-          {renderStatRow('Questions Seen', '55')}
-          {renderStatRow('Correct Answers', '38')}
-          {renderStatRow('Powers', '18')}
+          {renderStatRow('Total Score', totalScore.toString())}
+          {renderStatRow('Questions Seen', totalSeen.toString())}
+          {renderStatRow('Correct Answers', totalCorrect.toString())}
           
-          <View className='flex-row items-center'>
-            <Image source={icons.fire} className='w-14 h-14 shadow-lg mt-3' style={{tintColor: '#8a92eb'}} resizeMode='contain' />
-            <Text className='text-2xl font-gBold text-secondary mt-3'>Max Streak</Text>
-          </View>
 
           <View className='mt-2 shadow-md flex-row items-center'>
             <Text className='text-tertiary text-xl font-gBold p-2'>Bio</Text>

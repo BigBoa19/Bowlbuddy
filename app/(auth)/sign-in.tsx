@@ -42,8 +42,8 @@ const SignIn = () => {
       <View className="flex-1 justify-between p-4">
         <View className="items-center mt-20">
           <Image
-            source={require('../../assets/icons/logo.png')}
-            className="w-32 h-32 mb-4"
+            source={require('../../assets/images/BBlogo.jpg')}
+            className="w-52 h-52 mb-4"
             resizeMode="contain"
           />
           <Text className="text-tertiary text-4xl font-gBold">BowlBuddy</Text>
@@ -62,8 +62,8 @@ const SignIn = () => {
           <Image
             source={icons.google}
             resizeMode="contain"
-            tintColor="none"
-            className='w-10 h-10 mb-0.5'
+            tintColor="white"
+            className='w-10 h-10 mb-0.5 '
           />
           <Text className="text-white font-gBook text-xl ml-2">
             Continue with

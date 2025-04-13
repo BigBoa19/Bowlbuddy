@@ -101,7 +101,6 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
   };
 
   useEffect(() => {
-    console.log('ran');
     const timer = setTimeout(() => {
       if (startSTT) {
         startSpeechToText();
@@ -277,8 +276,6 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
           <CustomButton handlePress={() => answerCheck(inputAnswer)} title='Submit Answer'
           containerStyles='mt-5 mb-4 border-2 p-4 w-44 items-center justify-center'/>
 
-
-          <CustomButton title='Close' containerStyles='mt-5' handlePress={onBuzzClose}/>
         </View>
         <View className='flex-1' />
       </Animated.View>

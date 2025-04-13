@@ -45,8 +45,8 @@ const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
         className="items-center"
       >
         <Image
-          source={icons.play2}
-          className="w-32 h-32 mb-4"
+          source={require('../../assets/images/BBlogo.jpg')}
+          className="w-40 h-40 mb-4"
           style={{ tintColor: '#8a92eb' }}
           resizeMode="contain"
         />

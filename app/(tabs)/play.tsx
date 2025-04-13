@@ -5,7 +5,7 @@ import FocusedTextAnimator from '../components/TextAnimator'
 import { questions, fetchDBQuestions } from '../functions/fetchDB'
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { db } from '../../firebaseConfig'
-import { doc, setDoc, collection } from 'firebase/firestore'
+import { doc, setDoc, collection, updateDoc, increment, getDoc } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
 
@@ -78,6 +78,8 @@ const Play = () => {
   
   const shiftValue = React.useRef(new Animated.Value(-380)).current;
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
+
+  
   
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
@@ -85,8 +87,8 @@ const Play = () => {
     }
   },[difficulties, categories]) 
 
-  const pressStart = async () => {
-  // Animate the scale of the start button
+  const fetchData = async () => {
+    // Animate the scale of the start button
     Animated.timing(scaleValue, {
       toValue: 0,
       duration: 200,
@@ -96,11 +98,19 @@ const Play = () => {
       setSeen(1)
     });
 
-    // Use appendQuestion to fetch initial questions
-    await appendQuestion(true);
+    // Fetch initial questions
+    const initialQuestions = await fetchDBQuestions({difficulties: difficulties, categories: categories });
+    setQuestions(initialQuestions)
+    setCurrentQuestion(initialQuestions[0])
+    setAnswered([false, false])
+    setViewedIndices([false, false])
+    setCorrect([false, false])
+    
+    // Append another question
+    appendQuestion()
   }
 
-  const appendQuestion = async (isInitialFetch = false) => {
+  const appendQuestion = async () => {
     if (isLoading) return;
   
     setIsLoading(true);
@@ -110,20 +120,11 @@ const Play = () => {
       // Recursively fetch another question if too long
       newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     }
-    
-    if (isInitialFetch) {
-      // For initial fetch, set the first question and reset states
-      setQuestions([newQuestion[0]]);
-      setCurrentQuestion(newQuestion[0]);
-      setAnswered([false]);
-      setViewedIndices([false]);
-    } else {
-      // For subsequent fetches, append to existing questions
-      setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
-      setAnswered(prev => [...prev, false]);
-      setCorrect(prev => [...prev, false]);
-      setViewedIndices(prev => [...prev, false]);
-    }
+
+    setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
+    setAnswered(prev => [...prev, false]);
+    setCorrect(prev => [...prev, false]);
+    setViewedIndices(prev => [...prev, false]);
   
     setIsLoading(false);
   };
@@ -161,6 +162,7 @@ const Play = () => {
     }
   };
 
+  //this useEffect runs when the page is changed
   React.useEffect(()=>{
     setCurrentQuestion(questions[currentPage]);
     if(!viewedIndices[currentPage]){
@@ -196,8 +198,8 @@ const Play = () => {
   }
 
 
+  //this useEffect runs when buzzscreen is closed
   React.useEffect(() => {
-    //console.log("isAnimating:", isAnimating)
     if (!isAnimating && points>-1) {
       if(!answered[currentPage]) {setAnsweredCount(prev => prev+1)}
       setAnswered(prev => {
@@ -215,11 +217,15 @@ const Play = () => {
             return newCorrect;
           })
         }
+        setShowAnswer(true);
+        shiftValue.setValue(0);
         setScore(prev => prev+points)
       }
+      setPaused(false);
     }
   },[isAnimating])
 
+  //this useEffect runs when the reset button is pressed
   React.useEffect(() => {
     if(reset){
       //console.log("Reset True");
@@ -238,10 +244,93 @@ const Play = () => {
     }
   },[reset])
 
+  // Store score in database
+  React.useEffect(() => {
+    const updateScore = async () => {
+      if (!user?.uid) return;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const statsDoc = await getDoc(userRef);
+        if (!statsDoc.exists()) {
+          await setDoc(userRef, {
+            totalScore: 0,
+            totalCorrect: 0,
+            totalSeen: 0
+          });
+        }
+        if(score>0){
+          await updateDoc(userRef, {
+            totalScore: increment(10)
+          });
+        }
+      } catch (error) {
+        console.error('Error updating score:', error);
+      }
+    };
+
+    updateScore();
+  }, [score, user]);
+
+  // Store correct answers count in database
+  React.useEffect(() => {
+    const updateCorrect = async () => {
+      if (!user?.uid) return;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const statsDoc = await getDoc(userRef);
+        if (!statsDoc.exists()) {
+          await setDoc(userRef, {
+            totalScore: 0,
+            totalCorrect: 0,
+            totalSeen: 0
+          });
+        }
+        if(correctCount>0){
+          await updateDoc(userRef, {
+            totalCorrect: increment(1)
+          });
+        }
+      } catch (error) {
+        console.error('Error updating correct count:', error);
+      }
+    };
+
+    updateCorrect();
+  }, [correctCount, user]);
+
+  // Store seen count in database
+  React.useEffect(() => {
+    const updateSeen = async () => {
+      if (!user?.uid) return;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const statsDoc = await getDoc(userRef);
+        if (!statsDoc.exists()) {
+          await setDoc(userRef, {
+            totalScore: 0,
+            totalCorrect: 0,
+            totalSeen: 0
+          });
+        }
+        if(seen>0){
+          await updateDoc(userRef, {
+            totalSeen: increment(1)
+          });
+        }
+      } catch (error) {
+        console.error('Error updating seen count:', error);
+      }
+    };
+
+    updateSeen();
+  }, [seen, user]);
 
   const startProgressBar = () => {
-    // Don't start animation if the question has already been viewed
-    if (viewedIndices[currentPage]) {
+    // Don't start animation if the question has already been viewed or timer is disabled
+    if (viewedIndices[currentPage] || !enableTimer) {
       return;
     }
     console.log("Starting Progress Bar");
@@ -272,11 +361,11 @@ const Play = () => {
     }
   };
 
-  React.useEffect(()=>{
-    if(currentPage>1){
-      console.log(questions[currentPage].question_sanitized)
-    }
-  },[currentPage])
+  // React.useEffect(()=>{
+  //   if(currentPage>1){
+  //     console.log(questions[currentPage].question_sanitized)
+  //   }
+  // },[currentPage])
 
 
   return (
@@ -346,7 +435,7 @@ const Play = () => {
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-lg" >
         { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
-          <TouchableOpacity onPress={() => {pressStart()}} className={"bg-tertiary rounded-xl p-4"} >
+          <TouchableOpacity onPress={() => {fetchData()}} className={"bg-tertiary rounded-xl p-4"} >
               <Text className={"text-secondary text-center text-lg font-gBold"}> Start </Text>
           </TouchableOpacity>
         </Animated.View> : <FlatList
@@ -362,7 +451,7 @@ const Play = () => {
               readingSpeed={readingSpeed}
               viewedIndices={viewedIndices}
               onEnd={() => {
-                if (index === currentPage && !paused) {
+                if (index === currentPage && !paused && enableTimer) {
                   startProgressBar();
                 }
               }}
@@ -392,8 +481,11 @@ const Play = () => {
         {/* Buzz! */}
         {/* I NEED TO CHANGE THE CONDITION FOR BUZZ BEING AVAILABLE */}
         {/* COULD MAKE IT SO THAT ITS SLIGHTLY TRANSPARENT BEFORE PRESSING START BUTTON */}
-        <TouchableOpacity className="shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center" 
-          onPress={onBuzz}>
+        <TouchableOpacity 
+          className={`shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center ${(showStart || showAnswer) ? 'opacity-50' : ''}`}
+          onPress={onBuzz}
+          disabled={showStart || showAnswer}
+        >
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
         {/* Saved icon */}

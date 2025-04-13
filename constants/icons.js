@@ -20,7 +20,6 @@ import google_colored from "../assets/icons/google_colored.png"
 import x from "../assets/icons/x-circle-icon.png"
 import edit from "../assets/icons/pencil.png"
 import fire from "../assets/icons/fire.png"
-import logo from "../assets/icons/logo.png"
 import bolder_eye from "../assets/icons/bolder_eye.png"
 
 export default {
@@ -46,6 +45,5 @@ export default {
   x,
   edit,
   fire,
-  logo,
   bolder_eye,
 };
