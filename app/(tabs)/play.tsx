@@ -76,6 +76,7 @@ const Play = () => {
   const [ showAnswer, setShowAnswer ] = React.useState(false);
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
   const [reset, setReset] = React.useState(false);
+  const [seen, setSeen] = React.useState(-1);
   
   const shiftValue = React.useRef(new Animated.Value(-380)).current;
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
@@ -94,6 +95,7 @@ const Play = () => {
       useNativeDriver: true, 
     }).start(() => {
       setShowStart(false);
+      setSeen(1)
     });
 
     fetchDBQuestions({difficulties: difficulties, categories: categories }).then((questions) => {
@@ -159,6 +161,9 @@ const Play = () => {
 
   React.useEffect(()=>{
     setCurrentQuestion(questions[currentPage]);
+    if(!viewedIndices[currentPage]){
+      setSeen(a => a+1)
+    }
   },[currentPage])
 
   const handleSave = async (question: questions) => {
@@ -227,6 +232,7 @@ const Play = () => {
       setCorrectCount(0);
       setCurrentPage(0);
       setQuestions([]);
+      setSeen(0)
     }
   },[reset])
 
@@ -301,14 +307,19 @@ const Play = () => {
       {/* Score Board */}
       <View className="flex-shrink mx-4 mt-5 bg-primary border-tertiary border-2 rounded-lg p-3 px-5 shadow-md">
         <View className='flex-row justify-between'>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Score   {score}</Text>
-          <Text className="text-2xl text-tertiary text-left font-gBold">Correct   {correctCount}/{answeredCount}</Text>
+          <Text className="text-xl text-tertiary font-gBold">Score  {score}</Text>
+          <Text className="text-xl text-tertiary font-gBold">Correct  {correctCount}/{answeredCount}</Text>
+          <View className='flex-row items-center'>
+            <Image source={icons.bolder_eye} className="w-6 h-6" tintColor={"#cccfff"} resizeMode="contain" />
+            <Text className='text-xl text-tertiary font-gBold '>   {seen}</Text> 
+            {/* dude i swear this looks clunky */}
+          </View>
         </View>
       </View>
       {/* Answer and Timer Bar */}
       <View className="flex-shrink mx-4 mb-3 mt-2.5">
         <View className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
-          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : 'Answer'}</Text>
+          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
         </View>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
