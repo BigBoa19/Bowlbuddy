@@ -17,16 +17,17 @@ const FormField: React.FC<FormFieldProps> = ({title, value, placeholder, handleC
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
+    <View className={`space-y-1 ${otherStyles}`}>
       {title && <Text className={`text-base text-tertiary ml-2 font-gBook text ${props.titleStyles}`}>{title}</Text>}
-      <View className='w-full h-16 px-4 bg-slate-400 rounded-2xl border-2 border-[#2e2a72] flex flex-row justify-center items-center pb-1'>
+      <View className='w-full h-16 px-4 bg-slate-400 rounded-2xl border-2 border-[#2e2a72] flex flex-row justify-center items-center'>
         <TextInput
           value={value}
           placeholder={placeholder}
           onChangeText={handleChangeText}
           placeholderTextColor='#75726f'
           autoCapitalize={props.startCaps ? 'sentences' : 'none'}
-          className='flex-1 font-gBook text-base text-primary'
+          className='flex-1 font-gBook text-base text-primary pt-1'
+          style={{ minHeight: 30, lineHeight: 0 }} // Adjust based on font size
           secureTextEntry={title === 'Password' && !showPassword}
         />
         <Image
