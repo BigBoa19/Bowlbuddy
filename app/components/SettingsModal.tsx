@@ -95,6 +95,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         Toast.show({
             type: ALERT_TYPE.SUCCESS,
             title: 'Game Restarted!',
+            titleStyle: {
+                alignItems:'center',
+                marginTop:1.5,
+                justifyContent:'center',
+            }
         })
         setModalVisible(false);
     }
