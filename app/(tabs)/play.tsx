@@ -8,8 +8,6 @@ import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
-import { throwIfAudioIsDisabled } from 'expo-av/build/Audio/AudioAvailability'
-import Loading from '../loading'
 
 const QuestionItem = React.memo(({ 
   item, 
@@ -87,8 +85,8 @@ const Play = () => {
     }
   },[difficulties, categories]) 
 
-  const fetchData = async () => {
-    // Animate the scale of the start button
+  const pressStart = async () => {
+  // Animate the scale of the start button
     Animated.timing(scaleValue, {
       toValue: 0,
       duration: 200,
@@ -98,17 +96,11 @@ const Play = () => {
       setSeen(1)
     });
 
-    fetchDBQuestions({difficulties: difficulties, categories: categories }).then((questions) => {
-      setQuestions(questions)
-      setCurrentQuestion(questions[0])
-      setAnswered([false])
-      setViewedIndices([false])
-      appendQuestion()
-    });
-    
+    // Use appendQuestion to fetch initial questions
+    await appendQuestion(true);
   }
 
-  const appendQuestion = async () => {
+  const appendQuestion = async (isInitialFetch = false) => {
     if (isLoading) return;
   
     setIsLoading(true);
@@ -118,10 +110,20 @@ const Play = () => {
       // Recursively fetch another question if too long
       newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     }
-    setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
-    setAnswered(prev => [...prev, false])
-    setCorrect(prev => [...prev, false])
-    setViewedIndices(prev => [...prev, false])
+    
+    if (isInitialFetch) {
+      // For initial fetch, set the first question and reset states
+      setQuestions([newQuestion[0]]);
+      setCurrentQuestion(newQuestion[0]);
+      setAnswered([false]);
+      setViewedIndices([false]);
+    } else {
+      // For subsequent fetches, append to existing questions
+      setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
+      setAnswered(prev => [...prev, false]);
+      setCorrect(prev => [...prev, false]);
+      setViewedIndices(prev => [...prev, false]);
+    }
   
     setIsLoading(false);
   };
@@ -344,7 +346,7 @@ const Play = () => {
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-lg" >
         { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
-          <TouchableOpacity onPress={() => {fetchData()}} className={"bg-tertiary rounded-xl p-4"} >
+          <TouchableOpacity onPress={() => {pressStart()}} className={"bg-tertiary rounded-xl p-4"} >
               <Text className={"text-secondary text-center text-lg font-gBold"}> Start </Text>
           </TouchableOpacity>
         </Animated.View> : <FlatList
