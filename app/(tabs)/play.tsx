@@ -241,6 +241,9 @@ const Play = () => {
       setCurrentPage(0);
       setQuestions([]);
       setSeen(0)
+      shiftValue.stopAnimation()
+      shiftValue.setValue(-380)
+      setShowAnswer(false)
     }
   },[reset])
 
