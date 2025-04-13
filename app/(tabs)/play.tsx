@@ -189,7 +189,7 @@ const Play = () => {
   }
 
   const onBuzz = () => {
-    if(!showStart){
+    if(!showStart && !showAnswer){
       setAnimating(true);
       setPaused(true);
     }
