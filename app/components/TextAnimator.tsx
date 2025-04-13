@@ -28,7 +28,7 @@ const AnimatedWord = React.memo(({
       className="text-sm text-secondary text-left font-gBook"
       style={[{ marginRight: 5 }, animatedStyle]}
     >
-      {word}{''}
+      {word}
     </Animated.Text>
   );
 });
