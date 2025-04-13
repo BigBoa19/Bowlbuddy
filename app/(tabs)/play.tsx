@@ -236,6 +236,7 @@ const Play = () => {
     }
   },[reset])
 
+
   const startProgressBar = () => {
     // Don't start animation if the question has already been viewed
     if (viewedIndices[currentPage]) {
@@ -268,6 +269,13 @@ const Play = () => {
       setShowAnswer(false); // Hide the answer
     }
   };
+
+  React.useEffect(()=>{
+    if(currentPage>1){
+      console.log(questions[currentPage].question_sanitized)
+    }
+  },[currentPage])
+
 
   return (
     <SafeAreaView className='bg-background flex-1'>

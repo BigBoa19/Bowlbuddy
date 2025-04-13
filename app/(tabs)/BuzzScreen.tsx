@@ -23,13 +23,14 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
   const { startSTT } = useContext(STTContext);
 
   const [inputAnswer, setInputAnswer] = useState('');
+  const [prompted, setPrompted] = useState(false);
   const [started, setStarted] = useState(false);
   const [results, setResults] = useState<string[]>([]);
   const themeValue = useRef(new Animated.Value(0)).current;
   const [backgroundColor, setBackgroundColor] = useState(
     themeValue.interpolate({
       inputRange: [0, 1],
-      outputRange: ['#8a92eb', '#00cd00'],
+      outputRange: ['#8a92eb', '#8a92eb'],
     })
   );
 
@@ -47,6 +48,10 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
+    playBarAnimation()
+  }, []);
+
+  const playBarAnimation = () =>{
     if (enableTimer) {
       console.log('Starting animation');
       isAnswerChecked.current = false;
@@ -71,7 +76,7 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
     } else {
       setBarOpacity(0);
     }
-  }, []);
+  }
 
   const playSound = async (checkRight: boolean) => {
     const soundPath = checkRight
@@ -146,20 +151,55 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
     console.log(currentQuestion.answer);
     const response = checkAnswer(currentQuestion.answer, inputAnswer);
     console.log('Response: ', response.directive);
-    if (response.directedPrompt) {
-      // handle directed prompt if needed
+    if (response.directive === 'prompt' && !prompted) {
+      setBackgroundColor(
+        themeValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['#8a92eb', '#26619c'],
+        })
+      );
+      setPrompted(true)
+      promptAnimate()
+      shiftValue.stopAnimation()
+      shiftValue.setValue(-350)
+      playBarAnimation()
     }
-    if (response.directive === 'accept') {
+    else if (response.directive === 'accept') {
       playSound(true);
+      setBackgroundColor(
+        themeValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['#8a92eb', '#00cd00'],
+        })
+      );
+      startCheckAnimation(response.directive)
     } else if (response.directive === 'reject') {
       playSound(false);
       setBackgroundColor(
         themeValue.interpolate({
           inputRange: [0, 1],
-          outputRange: ['#8a92eb', '#b30000'],
+          outputRange: ['#8a92eb', '#cd0000'],
         })
       );
+      startCheckAnimation(response.directive)
     }
+  };
+
+  const promptAnimate = () => {
+    Animated.timing(themeValue, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(() => {
+      Animated.timing(themeValue, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start()
+    });
+  }
+
+  const startCheckAnimation = (response:string) => {
     Animated.timing(themeValue, {
       toValue: 1,
       duration: 100,
@@ -170,7 +210,7 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
         duration: 500,
         useNativeDriver: true,
       }).start(() => {
-        if (response.directive === 'accept') {
+        if (response === 'accept') {
           setPoints(10);
         } else {
           setPoints(0);
@@ -178,7 +218,7 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
         onBuzzClose();
       });
     });
-  };
+  }
 
   const handleClear = () => {
     setResults([]);
