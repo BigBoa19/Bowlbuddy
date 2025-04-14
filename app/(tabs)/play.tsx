@@ -84,56 +84,23 @@ const Play = () => {
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
 
   
-  
   React.useEffect(()=>{
     if (difficulties && difficulties.length === 0) {
       setDifficulties(undefined);
     }
   },[difficulties, categories]) 
 
-  const fetchData = async () => {
-    // Animate the scale of the start button
-    Animated.timing(scaleValue, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true, 
-    }).start(() => {
-      setShowStart(false);
-      setSeen(1)
-    });
-
-    // Fetch initial questions
-    const initialQuestions = await fetchDBQuestions({difficulties: difficulties, categories: categories });
-    setQuestions(initialQuestions)
-    setCurrentQuestion(initialQuestions[0])
-    setAnswered([false, false])
-    setViewedIndices([false, false])
-    setCorrect([false, false])
-    
-    // Append another question
-    appendQuestion()
-  }
-
-  const appendQuestion = async () => {
-    if (isLoading) return;
-  
-    setIsLoading(true);
-    let newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
-    // Check if question is too long (over 1000 characters)
-    while (newQuestion[0].question_sanitized.length > 900) {
-      // Recursively fetch another question if too long
-      newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
+  const stopProgressBar = React.useCallback(() => {
+    // Stop the progress bar animation if it's running
+    if (progressBarAnimation.current) {
+      progressBarAnimation.current.stop();
+      progressBarAnimation.current = null;
+      shiftValue.setValue(progressBarOffset); // Reset to initial position
+      setShowAnswer(false); // Hide the answer
     }
+  }, []);
 
-    setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
-    setAnswered(prev => [...prev, false]);
-    setCorrect(prev => [...prev, false]);
-    setViewedIndices(prev => [...prev, false]);
-  
-    setIsLoading(false);
-  };
-
-  const handleScroll = (event: any) => {
+  const handleScroll = React.useCallback((event: any) => {
     setPaused(false)
     const offsetY = event.nativeEvent.contentOffset.y;
     const page = Math.round(offsetY / height);
@@ -164,7 +131,53 @@ const Play = () => {
       shiftValue.setValue(progressBarOffset);
       setShowAnswer(false);
     }
-  };
+  }, [currentPage, height, questions, viewedIndices, stopProgressBar]);
+
+  const fetchData = async () => {
+    // Animate the scale of the start button
+    Animated.timing(scaleValue, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true, 
+    }).start(() => {
+      setShowStart(false);
+      setSeen(1)
+    });
+
+    // Fetch initial questions
+    let initialQuestions = await fetchDBQuestions({difficulties: difficulties, categories: categories });
+    while (initialQuestions[0].question_sanitized.length > 900) {
+      initialQuestions = await fetchDBQuestions({difficulties: difficulties, categories: categories });
+    }
+    
+    setQuestions(initialQuestions)
+    setCurrentQuestion(initialQuestions[0])
+    setAnswered([false, false])
+    setViewedIndices([false, false])
+    setCorrect([false, false])
+    
+    // Append another question
+    appendQuestion()
+  }
+
+  const appendQuestion = React.useCallback(async () => {
+    if (isLoading) return;
+  
+    setIsLoading(true);
+    let newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
+    // Check if question is too long (over 1000 characters)
+    while (newQuestion[0].question_sanitized.length > 900) {
+      // Recursively fetch another question if too long
+      newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
+    }
+
+    setQuestions(prevQuestions => [...prevQuestions, newQuestion[0]]);
+    setAnswered(prev => [...prev, false]);
+    setCorrect(prev => [...prev, false]);
+    setViewedIndices(prev => [...prev, false]);
+  
+    setIsLoading(false);
+  }, [difficulties, categories, isLoading]);
 
   //this useEffect runs when the page is changed
   React.useEffect(()=>{
@@ -174,7 +187,7 @@ const Play = () => {
     }
   },[currentPage])
 
-  const handleSave = async (question: questions) => {
+  const handleSave = React.useCallback(async (question: questions) => {
     try {
       const usersDocRef = doc(db, 'users', user?.uid || '');
       const savedQuestionsRef = collection(usersDocRef, 'savedQuestions');
@@ -192,14 +205,14 @@ const Play = () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  }, [user]);
 
-  const onBuzz = () => {
+  const onBuzz = React.useCallback(() => {
     if(!showStart && !showAnswer){
       setAnimating(true);
       setPaused(true);
     }
-  }
+  }, [showStart, showAnswer]);
 
 
   //this useEffect runs when buzzscreen is closed
@@ -213,18 +226,31 @@ const Play = () => {
       })
 
       if(!answered[currentPage] || allowRebuzz && !correct[currentPage]) {
-        if(points>0) {
+        if(points>0) { //if the answer is correct
           setCorrect(prev => {
             const newCorrect = [...prev];
             newCorrect[currentPage]=true;
             setCorrectCount(a => a+1)
             return newCorrect;
           })
+          setShowAnswer(true);
+          shiftValue.setValue(0);
+          setScore(prev => prev+points)
+        } else { //if the answer is wrong
+          if (allowRebuzz && !showAnswer) {
+            // If rebuzz is allowed and answer was wrong, reset and restart the progress bar
+            setShowAnswer(false);
+            shiftValue.setValue(progressBarOffset);
+            startProgressBar();
+          } else {
+            setShowAnswer(true);
+            shiftValue.setValue(0);
+            setScore(prev => prev+points)
+          }
         }
-        setShowAnswer(true);
-        shiftValue.setValue(0);
-        setScore(prev => prev+points)
-      }
+
+      } 
+
       setPaused(false);
     }
   },[isAnimating])
@@ -242,6 +268,7 @@ const Play = () => {
       setPaused(false);
       setScore(0);
       setCorrectCount(0);
+      setAnsweredCount(0);
       setCurrentPage(0);
       setQuestions([]);
       setSeen(0)
@@ -335,7 +362,7 @@ const Play = () => {
     updateSeen();
   }, [seen, user]);
 
-  const startProgressBar = () => {
+  const startProgressBar = React.useCallback(() => {
     // Don't start animation if the question has already been viewed or timer is disabled
     if (viewedIndices[currentPage] || !enableTimer) {
       return;
@@ -356,17 +383,7 @@ const Play = () => {
         setShowAnswer(true);
       }
     });
-  };
-  
-  const stopProgressBar = () => {
-    // Stop the progress bar animation if it's running
-    if (progressBarAnimation.current) {
-      progressBarAnimation.current.stop();
-      progressBarAnimation.current = null;
-      shiftValue.setValue(progressBarOffset); // Reset to initial position
-      setShowAnswer(false); // Hide the answer
-    }
-  };
+  }, [currentPage, viewedIndices, enableTimer]);
 
   // React.useEffect(()=>{
   //   if(currentPage>1){
@@ -471,8 +488,13 @@ const Play = () => {
           onEndReached={()=>{appendQuestion()}}
           onEndReachedThreshold={0.5}
           removeClippedSubviews={true}
-          maxToRenderPerBatch={3}
+          maxToRenderPerBatch={2}
           windowSize={3}
+          initialNumToRender={3}
+          updateCellsBatchingPeriod={50}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+          }}
         />}
          
       </View>

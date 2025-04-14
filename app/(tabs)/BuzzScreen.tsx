@@ -142,7 +142,15 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
   };
 
   const onSpeechError = (error: any) => {
-    console.error(error);
+    // Silently ignore the "No speech detected" error
+    if (error.error && error.error.code === 'recognition_fail' && 
+        error.error.message && error.error.message.includes('No speech detected')) {
+      // This is a normal error when no one is speaking, so we'll ignore it
+      return;
+    }
+    
+    // Log other errors that might be important
+    console.error('Speech recognition error:', error);
   };
 
   const answerCheck = (inputAnswer: string) => {
@@ -220,8 +228,23 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
   }
 
   const handleClear = () => {
+    // Clear the input field and results
     setResults([]);
     setInputAnswer('');
+    
+    // Reset the Voice state by destroying and recreating it
+    if (started) {
+      Voice.destroy().then(() => {
+        // Re-register the event listeners
+        Voice.onSpeechError = onSpeechError;
+        Voice.onSpeechResults = onSpeechResults;
+        
+        // Restart Voice if it was running
+        if (started) {
+          Voice.start('en-US');
+        }
+      });
+    }
   }
   
   
