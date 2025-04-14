@@ -251,7 +251,8 @@ const Play = () => {
           if (allowRebuzz) {
             // If rebuzz is allowed and answer was wrong, resume the progress bar
             setProgressBarPaused(false);
-            if (progressBarPaused) {
+            if (progressBarAnimation.current) {
+              progressBarAnimation.current.start()
               // Get the current position of the progress bar
               setProgressBarPaused(false);
               let currentPosition = progressBarOffset;
