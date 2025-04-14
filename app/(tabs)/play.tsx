@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated } from 'react-native'
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import FocusedTextAnimator from '../components/TextAnimator'
@@ -51,6 +51,10 @@ const Play = () => {
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const { points } = React.useContext(PointsContext);
 
+  // Get screen width and calculate progress bar offset
+  const screenWidth = Dimensions.get('window').width;
+  const progressBarOffset = -(screenWidth - 20); // 32 is the total horizontal padding (16px on each side)
+
   const [ paused , setPaused ] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [ height, setHeight] = React.useState(0);
@@ -76,7 +80,7 @@ const Play = () => {
   const [reset, setReset] = React.useState(false);
   const [seen, setSeen] = React.useState(-1);
   
-  const shiftValue = React.useRef(new Animated.Value(-380)).current;
+  const shiftValue = React.useRef(new Animated.Value(progressBarOffset)).current;
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
 
   
@@ -157,7 +161,7 @@ const Play = () => {
       shiftValue.setValue(0); 
       setShowAnswer(true);
     } else {
-      shiftValue.setValue(-380);
+      shiftValue.setValue(progressBarOffset);
       setShowAnswer(false);
     }
   };
@@ -242,7 +246,7 @@ const Play = () => {
       setQuestions([]);
       setSeen(0)
       shiftValue.stopAnimation()
-      shiftValue.setValue(-380)
+      shiftValue.setValue(progressBarOffset)
       setShowAnswer(false)
     }
   },[reset])
@@ -337,7 +341,7 @@ const Play = () => {
       return;
     }
     console.log("Starting Progress Bar");
-    shiftValue.setValue(-380); // Reset to 0
+    shiftValue.setValue(progressBarOffset); // Reset to 0
     
     // Store the animation reference so we can stop it later
     progressBarAnimation.current = Animated.timing(shiftValue, {
@@ -359,7 +363,7 @@ const Play = () => {
     if (progressBarAnimation.current) {
       progressBarAnimation.current.stop();
       progressBarAnimation.current = null;
-      shiftValue.setValue(-380); // Reset to initial position
+      shiftValue.setValue(progressBarOffset); // Reset to initial position
       setShowAnswer(false); // Hide the answer
     }
   };
