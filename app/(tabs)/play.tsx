@@ -212,7 +212,7 @@ const Play = () => {
     if (!showStart && !showAnswer) {
       setAnimating(true);
       setPaused(true);
-      if (allowRebuzz && progressBarAnimation.current) {
+      if (progressBarAnimation.current) {
         setProgressBarPaused(true);
         progressBarAnimation.current.stop();
       }
