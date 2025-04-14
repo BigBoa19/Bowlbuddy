@@ -233,8 +233,14 @@ const Play = () => {
             setCorrectCount(a => a+1)
             return newCorrect;
           })
+          setViewedIndices(prev => {
+            const newViewed = [...prev];
+            newViewed[currentPage] = true;
+            return newViewed;
+          })
           setShowAnswer(true);
           shiftValue.setValue(0);
+
           setScore(prev => prev+points)
         } else { //if the answer is wrong
           if (allowRebuzz && !showAnswer) {
