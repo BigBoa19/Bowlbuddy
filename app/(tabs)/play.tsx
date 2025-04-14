@@ -250,6 +250,7 @@ const Play = () => {
         } else { //if the answer is wrong
           if (allowRebuzz) {
             // If rebuzz is allowed and answer was wrong, resume the progress bar
+            
             setProgressBarPaused(false);
             if (progressBarAnimation.current) {
               progressBarAnimation.current.start()
