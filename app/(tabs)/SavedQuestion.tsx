@@ -100,7 +100,10 @@ const SavedQuestion = ({question, answer, onClose, questionId}:any) => {
   return (
     <SafeAreaView className='bg-background flex-1'>
       <View className='flex-row justify-between items-center p-4'>
-        <TouchableOpacity onPress={handleGoBack}>
+        <TouchableOpacity 
+          onPress={handleGoBack}
+          className="p-4 -m-4"
+        >
           <Image 
             source={icons.leftArrow}
             resizeMode='contain' 
@@ -108,7 +111,10 @@ const SavedQuestion = ({question, answer, onClose, questionId}:any) => {
             tintColor={"#ccccff"} 
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleDelete}>
+        <TouchableOpacity 
+          onPress={handleDelete}
+          className="p-4 -m-4"
+        >
           <Image 
             source={icons.trash}
             resizeMode='contain' 
