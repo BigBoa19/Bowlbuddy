@@ -7,7 +7,6 @@ import { useRouter } from 'expo-router'
 import { UserContext } from '../context';
 import { doc, updateDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
-import CustomButton from '../components/CustomButton';
 interface EditModalProps {
   visible: boolean;
   onClose: () => void;
@@ -118,7 +117,7 @@ const Profile = () => {
           onPress: async () => {
             try {
               await signOut(auth);
-              router.push('/(auth)/sign-in');
+              router.replace("/");
             } catch (error) {
               console.error('Logout error:', error);
             }

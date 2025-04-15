@@ -9,31 +9,31 @@ import { doc, setDoc, collection, updateDoc, increment, getDoc } from 'firebase/
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
 
-const QuestionItem = React.memo(({ 
-  item, 
-  index, 
-  currentPage, 
-  height, 
-  paused, 
-  readingSpeed, 
-  viewedIndices, 
-  onEnd 
-}: { 
-  item: questions; 
-  index: number; 
-  currentPage: number; 
-  height: number; 
-  paused: boolean; 
-  readingSpeed: number; 
-  viewedIndices: boolean[]; 
+const QuestionItem = React.memo(({
+  item,
+  index,
+  currentPage,
+  height,
+  paused,
+  readingSpeed,
+  viewedIndices,
+  onEnd
+}: {
+  item: questions;
+  index: number;
+  currentPage: number;
+  height: number;
+  paused: boolean;
+  readingSpeed: number;
+  viewedIndices: boolean[];
   onEnd: () => void;
 }) => {
   return (
     <View>
-      <FocusedTextAnimator 
-        sentence={item.question_sanitized} 
-        height={height} 
-        page={currentPage} 
+      <FocusedTextAnimator
+        sentence={item.question_sanitized}
+        height={height}
+        page={currentPage}
         paused={paused}
         isVisible={index === currentPage}
         speed={readingSpeed}
@@ -55,40 +55,41 @@ const Play = () => {
   const screenWidth = Dimensions.get('window').width;
   const progressBarOffset = -(screenWidth - 20); // 32 is the total horizontal padding (16px on each side)
 
-  const [ paused , setPaused ] = React.useState(false);
+  const [paused, setPaused] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [ height, setHeight] = React.useState(0);
-  const [ currentPage, setCurrentPage] = React.useState(0);
-  const [ questions , setQuestions ] = React.useState<questions[]>([]);
+  const [height, setHeight] = React.useState(0);
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [questions, setQuestions] = React.useState<questions[]>([]);
+  const [progressBarPaused, setProgressBarPaused] = React.useState(false);
 
-  const [ showStart , setShowStart ] = React.useState(true);
+  const [showStart, setShowStart] = React.useState(true);
 
   const scaleValue = React.useRef(new Animated.Value(1)).current;
 
-  const [ difficulties , setDifficulties ] = React.useState<number[] | undefined>(undefined);
+  const [difficulties, setDifficulties] = React.useState<number[] | undefined>(undefined);
   const [categories, setCategories] = React.useState<string[] | undefined>(undefined);
   const [readingSpeed, setReadingSpeed] = React.useState(150);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const [ score, setScore ] = React.useState(0)
-  const [ correct, setCorrect ] = React.useState<boolean[]>([]);
-  const [ correctCount, setCorrectCount ] = React.useState(0);
-  const [ answered, setAnswered ] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
-  const [ answeredCount, setAnsweredCount ] = React.useState(0);
-  const [ showAnswer, setShowAnswer ] = React.useState(false);
+  const [score, setScore] = React.useState(0)
+  const [correct, setCorrect] = React.useState<boolean[]>([]);
+  const [correctCount, setCorrectCount] = React.useState(0);
+  const [answered, setAnswered] = React.useState<boolean[]>([]); // the number of times answered PER QUESTION
+  const [answeredCount, setAnsweredCount] = React.useState(0);
+  const [showAnswer, setShowAnswer] = React.useState(false);
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
   const [reset, setReset] = React.useState(false);
   const [seen, setSeen] = React.useState(-1);
-  
+
   const shiftValue = React.useRef(new Animated.Value(progressBarOffset)).current;
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
 
-  
-  React.useEffect(()=>{
+
+  React.useEffect(() => {
     if (difficulties && difficulties.length === 0) {
       setDifficulties(undefined);
     }
-  },[difficulties, categories]) 
+  }, [difficulties, categories])
 
   const stopProgressBar = React.useCallback(() => {
     // Stop the progress bar animation if it's running
@@ -104,11 +105,11 @@ const Play = () => {
     setPaused(false)
     const offsetY = event.nativeEvent.contentOffset.y;
     const page = Math.round(offsetY / height);
-    
+
     // Stop the progress bar animation when scrolling to a new page
     if (page !== currentPage) {
       stopProgressBar();
-      
+
       // Mark the previous page as viewed when scrolling to a new page
       setViewedIndices((prev) => {
         const newArray = [...prev];
@@ -119,13 +120,13 @@ const Play = () => {
         return newArray;
       });
     }
-    
+
     setCurrentPage(page);
     setCurrentQuestion(questions[currentPage])
-    
+
     // Show answer immediately if the question has been viewed before
     if (viewedIndices[page]) {
-      shiftValue.setValue(0); 
+      shiftValue.setValue(0);
       setShowAnswer(true);
     } else {
       shiftValue.setValue(progressBarOffset);
@@ -138,31 +139,31 @@ const Play = () => {
     Animated.timing(scaleValue, {
       toValue: 0,
       duration: 200,
-      useNativeDriver: true, 
+      useNativeDriver: true,
     }).start(() => {
       setShowStart(false);
       setSeen(1)
     });
 
     // Fetch initial questions
-    let initialQuestions = await fetchDBQuestions({difficulties: difficulties, categories: categories });
+    let initialQuestions = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     while (initialQuestions[0].question_sanitized.length > 900) {
-      initialQuestions = await fetchDBQuestions({difficulties: difficulties, categories: categories });
+      initialQuestions = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     }
-    
+
     setQuestions(initialQuestions)
     setCurrentQuestion(initialQuestions[0])
     setAnswered([false, false])
     setViewedIndices([false, false])
     setCorrect([false, false])
-    
+
     // Append another question
     appendQuestion()
   }
 
   const appendQuestion = React.useCallback(async () => {
     if (isLoading) return;
-  
+
     setIsLoading(true);
     let newQuestion = await fetchDBQuestions({ difficulties: difficulties, categories: categories });
     // Check if question is too long (over 1000 characters)
@@ -175,23 +176,23 @@ const Play = () => {
     setAnswered(prev => [...prev, false]);
     setCorrect(prev => [...prev, false]);
     setViewedIndices(prev => [...prev, false]);
-  
+
     setIsLoading(false);
   }, [difficulties, categories, isLoading]);
 
   //this useEffect runs when the page is changed
-  React.useEffect(()=>{
+  React.useEffect(() => {
     setCurrentQuestion(questions[currentPage]);
-    if(!viewedIndices[currentPage]){
-      setSeen(a => a+1)
+    if (!viewedIndices[currentPage]) {
+      setSeen(a => a + 1)
     }
-  },[currentPage])
+  }, [currentPage])
 
   const handleSave = React.useCallback(async (question: questions) => {
     try {
       const usersDocRef = doc(db, 'users', user?.uid || '');
       const savedQuestionsRef = collection(usersDocRef, 'savedQuestions');
-      await setDoc(doc(savedQuestionsRef, question._id ), {
+      await setDoc(doc(savedQuestionsRef, question._id), {
         question: question.question,
         answer: question.answer,
         question_sanitized: question.question_sanitized,
@@ -208,29 +209,33 @@ const Play = () => {
   }, [user]);
 
   const onBuzz = React.useCallback(() => {
-    if(!showStart && !showAnswer){
+    if (!showStart && !showAnswer) {
       setAnimating(true);
       setPaused(true);
+      if (progressBarAnimation.current) {
+        setProgressBarPaused(true);
+        progressBarAnimation.current.stop();
+      }
     }
-  }, [showStart, showAnswer]);
+  }, [showStart, showAnswer, allowRebuzz]);
 
 
   //this useEffect runs when buzzscreen is closed
   React.useEffect(() => {
-    if (!isAnimating && points>-1) {
-      if(!answered[currentPage]) {setAnsweredCount(prev => prev+1)}
+    if (!isAnimating && points > -1) {
+      if (!answered[currentPage]) { setAnsweredCount(prev => prev + 1) }
       setAnswered(prev => {
         const newanswered = [...prev];
         newanswered[currentPage] = true;
         return newanswered
       })
 
-      if(!answered[currentPage] || allowRebuzz && !correct[currentPage]) {
-        if(points>0) { //if the answer is correct
+      if (!answered[currentPage] || allowRebuzz && !correct[currentPage]) {
+        if (points > 0) { //if the answer is correct
           setCorrect(prev => {
             const newCorrect = [...prev];
-            newCorrect[currentPage]=true;
-            setCorrectCount(a => a+1)
+            newCorrect[currentPage] = true;
+            setCorrectCount(a => a + 1)
             return newCorrect;
           })
           setViewedIndices(prev => {
@@ -241,34 +246,65 @@ const Play = () => {
           setShowAnswer(true);
           shiftValue.setValue(0);
 
-          setScore(prev => prev+points)
+          setScore(prev => prev + points)
         } else { //if the answer is wrong
-          if (allowRebuzz && !showAnswer) {
-            // If rebuzz is allowed and answer was wrong, reset and restart the progress bar
-            setShowAnswer(false);
-            shiftValue.setValue(progressBarOffset);
-            startProgressBar();
+          if (allowRebuzz) {
+            // If rebuzz is allowed and answer was wrong, resume the progress bar
+            
+            setProgressBarPaused(false);
+            if (progressBarAnimation.current) {
+              progressBarAnimation.current.start()
+              // Get the current position of the progress bar
+              setProgressBarPaused(false);
+              let currentPosition = progressBarOffset;
+              shiftValue.stopAnimation();
+              shiftValue.addListener(({ value }) => {
+                currentPosition = value;
+                shiftValue.removeAllListeners();
+
+                const remainingDistance = -currentPosition;
+                const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 10000;
+
+                // Create a new animation from the current position
+                progressBarAnimation.current = Animated.timing(shiftValue, {
+                  toValue: 0,
+                  duration: remainingDuration,
+                  useNativeDriver: true,
+                });
+
+                // Start the animation
+                progressBarAnimation.current.start(({ finished }) => {
+                  if (finished) {
+                    setShowAnswer(true);
+                  }
+                });
+              });
+            }
           } else {
             setShowAnswer(true);
             shiftValue.setValue(0);
-            setScore(prev => prev+points)
+            setViewedIndices(prev => {
+              const newViewed = [...prev];
+              newViewed[currentPage] = true;
+              return newViewed;
+            })
+            setScore(prev => prev + points)
           }
         }
-
-      } 
+      }
 
       setPaused(false);
     }
-  },[isAnimating])
+  }, [isAnimating])
 
   //this useEffect runs when the reset button is pressed
   React.useEffect(() => {
-    if(reset){
+    if (reset) {
       //console.log("Reset True");
       setReset(false);
       setCurrentQuestion(questions[0])
       setAnswered([])
-      setViewedIndices([]) 
+      setViewedIndices([])
       setShowStart(true);
       scaleValue.setValue(1);
       setPaused(false);
@@ -282,7 +318,7 @@ const Play = () => {
       shiftValue.setValue(progressBarOffset)
       setShowAnswer(false)
     }
-  },[reset])
+  }, [reset])
 
   // Store score in database
   React.useEffect(() => {
@@ -299,7 +335,7 @@ const Play = () => {
             totalSeen: 0
           });
         }
-        if(score>0){
+        if (score > 0) {
           await updateDoc(userRef, {
             totalScore: increment(10)
           });
@@ -327,7 +363,7 @@ const Play = () => {
             totalSeen: 0
           });
         }
-        if(correctCount>0){
+        if (correctCount > 0) {
           await updateDoc(userRef, {
             totalCorrect: increment(1)
           });
@@ -355,7 +391,7 @@ const Play = () => {
             totalSeen: 0
           });
         }
-        if(seen>0){
+        if (seen > 0) {
           await updateDoc(userRef, {
             totalSeen: increment(1)
           });
@@ -375,15 +411,15 @@ const Play = () => {
     }
     console.log("Starting Progress Bar");
     shiftValue.setValue(progressBarOffset); // Reset to 0
-    
+
     // Store the animation reference so we can stop it later
     progressBarAnimation.current = Animated.timing(shiftValue, {
       toValue: 0,
       duration: 10000, // 10 seconds
       useNativeDriver: true,
     });
-    
-    progressBarAnimation.current.start(({finished}) => {
+
+    progressBarAnimation.current.start(({ finished }) => {
       // When the animation is finished
       if (finished) {
         setShowAnswer(true);
@@ -416,21 +452,21 @@ const Play = () => {
             categories={categories}
             setCategories={setCategories}
             setModalVisible={setModalVisible}
-            enableTimer = {enableTimer}
+            enableTimer={enableTimer}
             setEnableTimer={setEnableTimer}
-            allowRebuzz = {allowRebuzz}
+            allowRebuzz={allowRebuzz}
             setAllowRebuzz={setAllowRebuzz}
             onSpeedChange={(val) => setReadingSpeed(val)}
             setReset={setReset}
           />
         </Modal>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image source={icons.settings} className='w-14 h-14 p-2' style={{tintColor: '#cccfff'}} resizeMode='contain' />
+          <Image source={icons.settings} className='w-14 h-14 p-2' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
         </TouchableOpacity>
-        
+
       </View>
 
-      {/* Border */} 
+      {/* Border */}
       <View className="h-[1px] bg-tertiary" />
 
       {/* Score Board */}
@@ -440,7 +476,7 @@ const Play = () => {
           <Text className="text-xl text-tertiary font-gBold">Correct  {correctCount}/{answeredCount}</Text>
           <View className='flex-row items-center'>
             <Image source={icons.bolder_eye} className="w-6 h-6" tintColor={"#cccfff"} resizeMode="contain" />
-            <Text className='text-xl text-tertiary font-gBold '>   {seen}</Text> 
+            <Text className='text-xl text-tertiary font-gBold '>   {seen}</Text>
             {/* dude i swear this looks clunky */}
           </View>
         </View>
@@ -454,7 +490,7 @@ const Play = () => {
           <Animated.View
             className='h-full rounded-full shadow-lg shadow-gray-900'
             style={{
-              transform: [{ translateX:shiftValue }],
+              transform: [{ translateX: shiftValue }],
               backgroundColor: '#ccccff',
               width: '100%', // Set the initial width to 100%
               transformOrigin: 'left', // Ensure scaling starts from the left
@@ -464,14 +500,14 @@ const Play = () => {
       </View>
       {/* Question Field */}
       <View className="flex-1 mx-4 mb-5 bg-primary border-tertiary border-2 rounded-lg p-5 shadow-lg" >
-        { showStart ?  <Animated.View style={{transform:[{scale:scaleValue}]}}>
-          <TouchableOpacity onPress={() => {fetchData()}} className={"bg-tertiary rounded-xl p-4"} >
-              <Text className={"text-secondary text-center text-lg font-gBold"}> Start </Text>
+        {showStart ? <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+          <TouchableOpacity onPress={() => { fetchData() }} className={"bg-tertiary rounded-xl p-4"} >
+            <Text className={"text-secondary text-center text-lg font-gBold"}> Start </Text>
           </TouchableOpacity>
         </Animated.View> : <FlatList
           data={questions}
           keyExtractor={(item, index) => `${item._id}-${index}`}
-          renderItem={({item, index}) => (
+          renderItem={({ item, index }) => (
             <QuestionItem
               item={item}
               index={index}
@@ -491,7 +527,7 @@ const Play = () => {
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
-          onEndReached={()=>{appendQuestion()}}
+          onEndReached={() => { appendQuestion() }}
           onEndReachedThreshold={0.5}
           removeClippedSubviews={true}
           maxToRenderPerBatch={2}
@@ -502,21 +538,21 @@ const Play = () => {
             minIndexForVisible: 0,
           }}
         />}
-         
+
       </View>
 
       {/* Buttons */}
       <View className='flex-row justify-between'>
         {/* Pause Icon */}
-        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(prev=>!prev)}>
-          <Image source={paused? icons.play2: icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
+        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(prev => !prev)}>
+          <Image source={paused ? icons.play2 : icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
         {/* Buzz Screen Modal */}
         <></>
         {/* Buzz! */}
         {/* I NEED TO CHANGE THE CONDITION FOR BUZZ BEING AVAILABLE */}
         {/* COULD MAKE IT SO THAT ITS SLIGHTLY TRANSPARENT BEFORE PRESSING START BUTTON */}
-        <TouchableOpacity 
+        <TouchableOpacity
           className={`shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center ${(showStart || showAnswer) ? 'opacity-50' : ''}`}
           onPress={onBuzz}
           disabled={showStart || showAnswer}
@@ -524,7 +560,7 @@ const Play = () => {
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
         {/* Saved icon */}
-        <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={ () => handleSave(questions[currentPage]) }>
+        <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => handleSave(questions[currentPage])}>
           <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
       </View>

@@ -18,7 +18,7 @@ import Animated, {
 
 const { width } = Dimensions.get('window');
 
-const Item = ({props, show, setShow}:any) => {
+const Item = React.memo(({props, show, setShow}:any) => {
   // Create a shared value for the animation
   const translateX = useSharedValue(width);
   
@@ -105,7 +105,7 @@ const Item = ({props, show, setShow}:any) => {
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const Saved = () => {
   const { user } = React.useContext(UserContext);
@@ -171,6 +171,13 @@ const Saved = () => {
           renderItem={({ item }) => filterData(item)}
           keyExtractor={(item) => item._id}
           className="px-3"
+          ListEmptyComponent={() => (
+            <View className="flex-1 items-center justify-center mt-20">
+              <Text className="text-tertiary text-xl font-gBook text-center">
+                Save questions by pressing the save button!
+              </Text>
+            </View>
+          )}
         />
       </View>
     </SafeAreaView>

@@ -47,7 +47,6 @@ const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
         <Image
           source={require('../../assets/images/BBlogo.jpg')}
           className="w-40 h-40 mb-4"
-          style={{ tintColor: '#8a92eb' }}
           resizeMode="contain"
         />
         <Text className="text-tertiary text-4xl font-gBold">BowlBuddy</Text>
