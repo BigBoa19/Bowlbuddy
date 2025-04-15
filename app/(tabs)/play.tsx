@@ -17,7 +17,8 @@ const QuestionItem = React.memo(({
   paused,
   readingSpeed,
   viewedIndices,
-  onEnd
+  onEnd,
+  disableReader
 }: {
   item: questions;
   index: number;
@@ -27,9 +28,11 @@ const QuestionItem = React.memo(({
   readingSpeed: number;
   viewedIndices: boolean[];
   onEnd: () => void;
+  disableReader: boolean;
 }) => {
   return (
     <View>
+      {disableReader ? <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> : 
       <FocusedTextAnimator
         sentence={item.question_sanitized}
         height={height}
@@ -39,7 +42,7 @@ const QuestionItem = React.memo(({
         speed={readingSpeed}
         wasSeen={index < currentPage || viewedIndices[index]}
         onEnd={onEnd}
-      />
+      />}
     </View>
   );
 });
@@ -61,6 +64,7 @@ const Play = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [questions, setQuestions] = React.useState<questions[]>([]);
   const [progressBarPaused, setProgressBarPaused] = React.useState(false);
+  const [disableReader, setDisableReader] = React.useState(false);
 
   const [showStart, setShowStart] = React.useState(true);
 
@@ -458,6 +462,8 @@ const Play = () => {
             setAllowRebuzz={setAllowRebuzz}
             onSpeedChange={(val) => setReadingSpeed(val)}
             setReset={setReset}
+            disableReader={disableReader}
+            setDisableReader={setDisableReader}
           />
         </Modal>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -521,6 +527,7 @@ const Play = () => {
                   startProgressBar();
                 }
               }}
+              disableReader={disableReader}
             />
           )}
           pagingEnabled={true}

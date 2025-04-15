@@ -18,6 +18,8 @@ interface SettingsModalProps {
   setAllowRebuzz: React.Dispatch<React.SetStateAction<boolean>>;
   onSpeedChange: (val: number) => void;
   setReset: React.Dispatch<React.SetStateAction<boolean>>;
+  disableReader: boolean;
+  setDisableReader: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -26,7 +28,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   setModalVisible,
   enableTimer, setEnableTimer,
   allowRebuzz, setAllowRebuzz,
-  onSpeedChange, setReset
+  onSpeedChange, setReset, disableReader, setDisableReader
 }) => {
     const { startSTT, setStartSTT } = React.useContext(STTContext);
     const [toggleDifficulties, setToggleDifficulties] = React.useState({
@@ -106,6 +108,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
     const handleSpeedChange = (val: number) => {onSpeedChange(val);}
 
+    const handleDisableReader = () => {
+        setDisableReader(prev => {
+            return !prev;
+        });
+    }
+
     return (
         <View className='flex-1 justify-center p-4'>
             <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
@@ -157,6 +165,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         isActive={allowRebuzz}
                         handlePress = {()=>{setAllowRebuzz(!allowRebuzz)}}
                     />
+                </View>
+                <View className='flex-row justify-between'>
+                    <CustomButton title='Disable Reader' 
+                        containerStyles='mt-5 ml-2'
+                        isActive={disableReader}
+                        handlePress = {handleDisableReader}/>
                 </View>
                 <View className='flex-row justify-between'>
                     <CustomButton title='Speech To Text' 
