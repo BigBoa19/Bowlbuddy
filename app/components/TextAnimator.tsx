@@ -7,6 +7,7 @@ import Animated, {
   withDelay,
   withTiming,
   cancelAnimation,
+  type SharedValue,
 } from 'react-native-reanimated';
 
 // Memoized word component to prevent unnecessary re-renders
@@ -16,7 +17,7 @@ const AnimatedWord = React.memo(({
   index 
 }: { 
   word: string; 
-  opacity: Animated.SharedValue<number>; 
+  opacity: SharedValue<number>; 
   index: number;
 }) => {
   const animatedStyle = useAnimatedStyle(() => ({

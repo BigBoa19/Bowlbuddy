@@ -30,6 +30,20 @@ const QuestionItem = React.memo(({
   onEnd: () => void;
   disableReader: boolean;
 }) => {
+  const isVisible = index === currentPage;
+  
+  // For non-visible items, render a simple placeholder
+  if (!isVisible) {
+    return (
+      <View style={{ height }}>
+        <Text className='text-sm text-secondary text-left font-gBook' numberOfLines={1}>
+          Loading...
+        </Text>
+      </View>
+    );
+  }
+  
+  // Only render the TextAnimator if this item is actually visible
   return (
     <View>
       {disableReader ? <Text className='text-sm text-secondary text-left font-gBook' style={{height: height}}>{item.question_sanitized}</Text> : 
@@ -56,7 +70,7 @@ const Play = () => {
 
   // Get screen width and calculate progress bar offset
   const screenWidth = Dimensions.get('window').width;
-  const progressBarOffset = -(screenWidth - 20); // 32 is the total horizontal padding (16px on each side)
+  const progressBarOffset = -(screenWidth - 20);
 
   const [paused, setPaused] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
@@ -415,6 +429,13 @@ const Play = () => {
     }
     console.log("Starting Progress Bar");
     shiftValue.setValue(progressBarOffset); // Reset to 0
+    
+    // Cancel any existing animation
+    if (progressBarAnimation.current) {
+      progressBarAnimation.current.stop();
+    }
+    
+    setProgressBarPaused(false);
 
     // Store the animation reference so we can stop it later
     progressBarAnimation.current = Animated.timing(shiftValue, {
@@ -436,6 +457,47 @@ const Play = () => {
   //     console.log(questions[currentPage].question_sanitized)
   //   }
   // },[currentPage])
+
+  const playPauseToggle = () => {
+    if (paused) { //currently paused
+      setPaused(false);
+      // Resume progress bar if it was paused
+      if (progressBarPaused && progressBarAnimation.current) {
+        setProgressBarPaused(false);
+        // Get current position and create a new animation from there
+        let currentPosition = 0;
+        shiftValue.stopAnimation(value => {
+          currentPosition = value;
+          
+          const remainingDistance = -currentPosition;
+          const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 10000;
+          
+          // Only start a new animation if there's distance remaining
+          if (remainingDistance > 0) {
+            progressBarAnimation.current = Animated.timing(shiftValue, {
+              toValue: 0,
+              duration: remainingDuration,
+              useNativeDriver: true,
+            });
+            
+            progressBarAnimation.current.start(({ finished }) => {
+              if (finished) {
+                setShowAnswer(true);
+              }
+            });
+          }
+        });
+      }
+    } else { //currently playing
+      setPaused(true);
+      // Pause progress bar if it's running
+      if (progressBarAnimation.current) {
+        console.log("Pausing progress bar");
+        progressBarAnimation.current.stop();
+        setProgressBarPaused(true);
+      }
+    }
+  };
 
 
   return (
@@ -551,7 +613,7 @@ const Play = () => {
       {/* Buttons */}
       <View className='flex-row justify-between'>
         {/* Pause Icon */}
-        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => setPaused(prev => !prev)}>
+        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={playPauseToggle}>
           <Image source={paused ? icons.play2 : icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
         {/* Buzz Screen Modal */}
