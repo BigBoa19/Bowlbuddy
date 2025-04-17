@@ -97,7 +97,7 @@ const Play = () => {
   const [showAnswer, setShowAnswer] = React.useState(false);
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
   const [reset, setReset] = React.useState(false);
-  const [seen, setSeen] = React.useState(-1);
+  const [seen, setSeen] = React.useState(0);
 
   const shiftValue = React.useRef(new Animated.Value(progressBarOffset)).current;
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
@@ -338,6 +338,12 @@ const Play = () => {
     }
   }, [reset])
 
+  React.useEffect(()=>{
+    if(showStart){
+      setSeen(0)
+    }
+  },[seen])
+
   // Store score in database
   React.useEffect(() => {
     const updateScore = async () => {
@@ -550,10 +556,10 @@ const Play = () => {
         </View>
       </View>
       {/* Answer and Timer Bar */}
-      <View className="flex-shrink mx-4 mb-3 mt-2.5">
-        <View className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
+      <View className="flex-shrink mx-4 mb-3 mt-2.5" >
+        <ScrollView horizontal={true} className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
           <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
-        </View>
+        </ScrollView>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
             className='h-full rounded-full shadow-lg shadow-gray-900'
