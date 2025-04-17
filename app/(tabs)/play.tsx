@@ -281,7 +281,7 @@ const Play = () => {
                 shiftValue.removeAllListeners();
 
                 const remainingDistance = -currentPosition;
-                const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 10000;
+                const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 5000;
 
                 // Create a new animation from the current position
                 progressBarAnimation.current = Animated.timing(shiftValue, {
@@ -446,7 +446,7 @@ const Play = () => {
     // Store the animation reference so we can stop it later
     progressBarAnimation.current = Animated.timing(shiftValue, {
       toValue: 0,
-      duration: 10000, // 10 seconds
+      duration: 5000, // 10 seconds
       useNativeDriver: true,
     });
 
@@ -476,7 +476,7 @@ const Play = () => {
           currentPosition = value;
           
           const remainingDistance = -currentPosition;
-          const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 10000;
+          const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 5000;
           
           // Only start a new animation if there's distance remaining
           if (remainingDistance > 0) {
