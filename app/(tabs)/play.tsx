@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions } from 'react-native'
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions, TouchableHighlight, ViewComponent } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import FocusedTextAnimator from '../components/TextAnimator'
@@ -97,7 +97,7 @@ const Play = () => {
   const [showAnswer, setShowAnswer] = React.useState(false);
   const [viewedIndices, setViewedIndices] = React.useState<boolean[]>([]); // Track viewed items using an array
   const [reset, setReset] = React.useState(false);
-  const [seen, setSeen] = React.useState(-1);
+  const [seen, setSeen] = React.useState(0);
 
   const shiftValue = React.useRef(new Animated.Value(progressBarOffset)).current;
   const progressBarAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
@@ -281,7 +281,7 @@ const Play = () => {
                 shiftValue.removeAllListeners();
 
                 const remainingDistance = -currentPosition;
-                const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 10000;
+                const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 5000;
 
                 // Create a new animation from the current position
                 progressBarAnimation.current = Animated.timing(shiftValue, {
@@ -337,6 +337,12 @@ const Play = () => {
       setShowAnswer(false)
     }
   }, [reset])
+
+  React.useEffect(()=>{
+    if(showStart){
+      setSeen(0)
+    }
+  },[seen])
 
   // Store score in database
   React.useEffect(() => {
@@ -440,7 +446,7 @@ const Play = () => {
     // Store the animation reference so we can stop it later
     progressBarAnimation.current = Animated.timing(shiftValue, {
       toValue: 0,
-      duration: 10000, // 10 seconds
+      duration: 5000, // 10 seconds
       useNativeDriver: true,
     });
 
@@ -470,7 +476,7 @@ const Play = () => {
           currentPosition = value;
           
           const remainingDistance = -currentPosition;
-          const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 10000;
+          const remainingDuration = (remainingDistance / Math.abs(progressBarOffset)) * 5000;
           
           // Only start a new animation if there's distance remaining
           if (remainingDistance > 0) {
@@ -499,6 +505,15 @@ const Play = () => {
     }
   };
 
+  const skipQuestion = () => {
+    setShowAnswer(true)
+    shiftValue.setValue(0);
+    setViewedIndices(prev => {
+      const newViewed = [...prev];
+      newViewed[currentPage] = true;
+      return newViewed;
+    })
+  }
 
   return (
     <SafeAreaView className='bg-background flex-1'>
@@ -551,9 +566,9 @@ const Play = () => {
       </View>
       {/* Answer and Timer Bar */}
       <View className="flex-shrink mx-4 mb-3 mt-2.5">
-        <View className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
+        <ScrollView horizontal={true} className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
           <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
-        </View>
+        </ScrollView>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
             className='h-full rounded-full shadow-lg shadow-gray-900'
@@ -613,25 +628,32 @@ const Play = () => {
       {/* Buttons */}
       <View className='flex-row justify-between'>
         {/* Pause Icon */}
-        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={playPauseToggle}>
-          <Image source={paused ? icons.play2 : icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
+        <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-[15px] justify-center items-center" onPress={playPauseToggle}>
+          <Image source={paused ? icons.play2 : icons.pause2} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
         {/* Buzz Screen Modal */}
-        <></>
         {/* Buzz! */}
         {/* I NEED TO CHANGE THE CONDITION FOR BUZZ BEING AVAILABLE */}
         {/* COULD MAKE IT SO THAT ITS SLIGHTLY TRANSPARENT BEFORE PRESSING START BUTTON */}
         <TouchableOpacity
-          className={`shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center ${(showStart || showAnswer) ? 'opacity-50' : ''}`}
+          className={`shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-[15px] justify-center items-center ${(showStart || showAnswer) ? 'opacity-50' : ''}`}
           onPress={onBuzz}
           disabled={showStart || showAnswer}
         >
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
         {/* Saved icon */}
-        <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => handleSave(questions[currentPage])}>
-          <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
-        </TouchableOpacity>
+        
+        <View className="flex-[0.5] mx-3 mb-3 pr-1" >
+          <TouchableOpacity className='flex-[0.5] bg-primary shadow-md w-full h-5 rounded-[10px] mb-2 justify-center items-center' onPress={() => handleSave(questions[currentPage])}>
+            <Image source={icons.save} className="w-5 h-5" tintColor={"#cccfff"} resizeMode="contain" />
+          </TouchableOpacity>
+
+          <TouchableOpacity className='flex-[0.5] bg-primary shadow-md w-full  h-5 rounded-[10px] mb-2 justify-center items-center' onPress={skipQuestion}>
+            <Image source={icons.next} className="w-8 h-8" tintColor={"#cccfff"} resizeMode="contain" />
+          </TouchableOpacity>
+
+        </View>
       </View>
     </SafeAreaView>
   )
