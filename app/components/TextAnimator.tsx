@@ -101,8 +101,22 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = React.memo(({
       started[i] = wasSeen;
     });
     if (isVisible && !wasSeen) {
-      words.forEach((_, i) => {
-        startWordAnimation(i, i * speed);
+      let cumulativeDelay = 0;
+      
+      words.forEach((word, i) => {
+        // Start this word with the current cumulative delay
+        startWordAnimation(i, cumulativeDelay);
+        // Calculate delay for the next word
+        cumulativeDelay += speed; // Standard delay between words
+        // Check if this word ends a sentence and add extra pause if needed
+        const lastChar = word.charAt(word.length - 1);
+        const secondLastChar = word.charAt(word.length - 2);
+        // Check for sentence-ending punctuation
+        if (['.', '!', '?'].includes(lastChar)) {
+          cumulativeDelay += 200; // Extra 400ms pause after sentence end
+        } else if (lastChar === '"' && ['.', '!', '?'].includes(secondLastChar)) {
+          cumulativeDelay += 200; // Extra pause for quote-ending sentences
+        }
       });
     } else if (isVisible && wasSeen && onEnd) {
       // If the question was seen before, call onEnd immediately
