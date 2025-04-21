@@ -180,7 +180,7 @@ const BuzzScreen: React.FC<BuzzScreenProps> = ({ scaleValue, setBuzzModal }) => 
         })
       );
       startCheckAnimation(response.directive)
-    } else if (response.directive === 'reject') {
+    } else if (response.directive === 'reject' || response.directive==='prompt' && prompted) {
       playSound(false);
       setBackgroundColor(
         themeValue.interpolate({
