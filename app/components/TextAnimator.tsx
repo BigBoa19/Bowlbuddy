@@ -168,7 +168,7 @@ const TextAnimatorReanimated: React.FC<TextAnimatorProps> = React.memo(({
   }, [paused, isVisible, wasSeen]);
 
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', height }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', height, width:"100%" }}>
       {words.map((word, i) => (
         <AnimatedWord
           key={`${word}-${i}`}
