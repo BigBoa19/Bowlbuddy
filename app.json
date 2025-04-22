@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.objectiveac.bowlbuddy"
+      "bundleIdentifier": "R28YV52T9C.com.objectiveac.bowlbuddy"
     },
     "android": {
       "adaptiveIcon": {
