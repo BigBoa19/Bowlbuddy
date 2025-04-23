@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "R28YV52T9C.com.objectiveac.bowlbuddy"
+      "bundleIdentifier": "R28YV52T9C.com.objectiveac.bowlbuddy",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "BowlBuddy does not directly access your photos, but this permission is required by a component in the app. Your photos will not be accessed or used without your explicit permission."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,8 +41,8 @@
       [
         "@react-native-voice/voice",
         {
-          "microphonePermission": "Allow Voice to Text Tutorial to access the microphone",
-          "speechRecognitionPermission": "Allow Voice to Text Tutorial to securely recognize user speech"
+          "microphonePermission": "BowlBuddy requires microphone access to allow you to answer questions using voice input during quiz gameplay.",
+          "speechRecognitionPermission": "BowlBuddy uses speech recognition to convert your spoken answers to text during quiz gameplay."
         }
       ],
       "expo-av"
