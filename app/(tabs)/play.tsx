@@ -159,6 +159,7 @@ const Play = () => {
       duration: 200,
       useNativeDriver: true,
     }).start(() => {
+      setPaused(false)
       setShowStart(false);
       setSeen(1)
     });
