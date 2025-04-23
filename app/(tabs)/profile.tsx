@@ -45,6 +45,7 @@ const EditModal: React.FC<EditModalProps> = ({
           multiline={multiline}
           textAlignVertical={multiline ? "top" : "center"}
           numberOfLines={multiline ? 4 : 1}
+          autoCorrect={false}
         />
         <View className="flex-row justify-end space-x-4">
           <TouchableOpacity 
