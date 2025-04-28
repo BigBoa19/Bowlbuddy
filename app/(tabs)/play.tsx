@@ -8,6 +8,7 @@ import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection, updateDoc, increment, getDoc } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
+import CustomButton from '../components/CustomButton'
 
 const QuestionItem = React.memo(({
   item,
@@ -74,6 +75,7 @@ const Play = () => {
 
   const [paused, setPaused] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [askModalVisible, setAskModalVisible] = React.useState(false);
   const [height, setHeight] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [questions, setQuestions] = React.useState<questions[]>([]);
@@ -201,6 +203,7 @@ const Play = () => {
 
   //this useEffect runs when the page is changed
   React.useEffect(() => {
+    setAnsweredCount(0)
     setCurrentQuestion(questions[currentPage]);
     if (!viewedIndices[currentPage]) {
       setSeen(a => a + 1)
@@ -338,6 +341,14 @@ const Play = () => {
       setShowAnswer(false)
     }
   }, [reset])
+
+  React.useEffect(()=>{
+    setAnsweredCount(0);
+    setShowAnswer(false);
+    setAnswered([false, false])
+    setViewedIndices([false, false])
+    setCorrect([false, false])
+  },[])
 
   React.useEffect(()=>{
     if(showStart){
@@ -521,33 +532,57 @@ const Play = () => {
       {/* Header */}
       <View className='flex-row justify-between items-center p-2 pl-5'>
         <Text className='text-tertiary text-3xl font-gBold'>BowlBuddy</Text>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}>
-          <SettingsModal
-            difficulties={difficulties}
-            setDifficulties={setDifficulties}
-            categories={categories}
-            setCategories={setCategories}
-            setModalVisible={setModalVisible}
-            enableTimer={enableTimer}
-            setEnableTimer={setEnableTimer}
-            allowRebuzz={allowRebuzz}
-            setAllowRebuzz={setAllowRebuzz}
-            onSpeedChange={(val) => setReadingSpeed(val)}
-            setReset={setReset}
-            disableReader={disableReader}
-            setDisableReader={setDisableReader}
-          />
-        </Modal>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image source={icons.settings} className='w-14 h-14 p-2' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
-        </TouchableOpacity>
+        <View className='flex-row items-end'>
 
+          <Modal animationType="slide" transparent={true} visible={askModalVisible}>
+            <View className='flex-1 justify-center p-4'>
+              <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+                <Text className='text-l text-secondary font-gBold text-center shadow-md shadow-black'>
+                  Scroll to see the next question!
+                </Text>
+                <Text className='text-xl text-tertiary font-gBook text-center mt-8'>
+                  Contact the developer at:
+                </Text>
+                <Text className='text-xl text-tertiary font-gBold text-center mt-2 p-2 bg-primary rounded-lg'>
+                  ncdev1919@gmail.com
+                </Text>
+                <TouchableOpacity>
+                  <CustomButton title='Close' handlePress={() => setAskModalVisible(false)} containerStyles='mt-5' />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          <TouchableOpacity onPress={() => setAskModalVisible(true)}>
+            <Image source={icons.conversation} className='w-14 h-14 p-3' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
+          </TouchableOpacity>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}>
+            <SettingsModal
+              difficulties={difficulties}
+              setDifficulties={setDifficulties}
+              categories={categories}
+              setCategories={setCategories}
+              setModalVisible={setModalVisible}
+              enableTimer={enableTimer}
+              setEnableTimer={setEnableTimer}
+              allowRebuzz={allowRebuzz}
+              setAllowRebuzz={setAllowRebuzz}
+              onSpeedChange={(val) => setReadingSpeed(val)}
+              setReset={setReset}
+              disableReader={disableReader}
+              setDisableReader={setDisableReader}
+            />
+          </Modal>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Image source={icons.settings} className='w-14 h-14 p-2' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Border */}
