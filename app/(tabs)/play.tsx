@@ -203,7 +203,6 @@ const Play = () => {
 
   //this useEffect runs when the page is changed
   React.useEffect(() => {
-    setAnsweredCount(0)
     setCurrentQuestion(questions[currentPage]);
     if (!viewedIndices[currentPage]) {
       setSeen(a => a + 1)
@@ -343,11 +342,14 @@ const Play = () => {
   }, [reset])
 
   React.useEffect(()=>{
-    setAnsweredCount(0);
-    setShowAnswer(false);
-    setAnswered([false, false])
-    setViewedIndices([false, false])
-    setCorrect([false, false])
+    if(showStart){
+      setAnsweredCount(0);
+      setShowAnswer(false);
+      setAnswered([false, false])
+      setViewedIndices([false, false])
+      setCorrect([false, false])
+      setSeen(0)
+    }
   },[])
 
   React.useEffect(()=>{
