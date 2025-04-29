@@ -76,6 +76,7 @@ const Play = () => {
   const [paused, setPaused] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [askModalVisible, setAskModalVisible] = React.useState(false);
+  const [skipModal, setSkipModal] = React.useState(false)
   const [height, setHeight] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [questions, setQuestions] = React.useState<questions[]>([]);
@@ -520,13 +521,18 @@ const Play = () => {
   };
 
   const skipQuestion = () => {
-    setShowAnswer(true)
-    shiftValue.setValue(0);
-    setViewedIndices(prev => {
-      const newViewed = [...prev];
-      newViewed[currentPage] = true;
-      return newViewed;
-    })
+    if(viewedIndices[currentPage]==true){
+      setSkipModal(true);
+    }
+    if(!showStart){
+      setShowAnswer(true)
+      shiftValue.setValue(0);
+      setViewedIndices(prev => {
+        const newViewed = [...prev];
+        newViewed[currentPage] = true;
+        return newViewed;
+      })
+    }
   }
 
   return (
@@ -540,7 +546,7 @@ const Play = () => {
             <View className='flex-1 justify-center p-4'>
               <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
                 <Text className='text-l text-secondary font-gBold text-center shadow-md shadow-black'>
-                  Scroll to see the next question!
+                  Swipe to see the next question!
                 </Text>
                 <Text className='text-xl text-tertiary font-gBook text-center mt-8'>
                   Contact the developer at:
@@ -680,8 +686,23 @@ const Play = () => {
         >
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
-        {/* Saved icon */}
-        
+
+        <Modal animationType="slide" transparent={true} visible={skipModal}>
+            <View className='flex-1 justify-center p-4'>
+              <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+                <Text className='text-l text-tertiary font-gBook text-center mb-4'>
+                  This button ends the question in the middle!
+                </Text>
+                <Text className='text-xl text-tertiary font-gBold text-center mt-2 p-2 bg-primary rounded-lg'>
+                  Scroll to see the next question!
+                </Text>
+                <TouchableOpacity>
+                  <CustomButton title='Close' handlePress={() => setSkipModal(false)} containerStyles='mt-5' />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        {/* Saved icon */}      
         <View className="flex-[0.5] mx-3 mb-3 pr-1" >
           <TouchableOpacity className='flex-[0.5] bg-primary shadow-md w-full h-5 rounded-[10px] mb-2 justify-center items-center' onPress={() => handleSave(questions[currentPage])}>
             <Image source={icons.save} className="w-5 h-5" tintColor={"#cccfff"} resizeMode="contain" />
