@@ -6,7 +6,8 @@ import SplashScreen from './components/SplashScreen';
 import { View } from 'react-native';
 
 export default function Index() {
-  const { user } = React.useContext(UserContext);
+  const { userGoogle, userApple } = React.useContext(UserContext);
+  const user = userGoogle || userApple;
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
