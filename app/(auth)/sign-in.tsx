@@ -7,6 +7,9 @@ import { auth, db } from "../../firebaseConfig"
 import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
 import * as Google from "expo-auth-session/providers/google"
 import { router } from "expo-router"
+import { AppleAuthProvider, getAuth, signInWithCredential as appleSignInWithCredential } from '@react-native-firebase/auth';
+import { appleAuth } from '@invertase/react-native-apple-authentication';
+
 
 
 const SignIn = () => {
@@ -21,6 +24,20 @@ const SignIn = () => {
     const dateString = date.toLocaleString();
     const usersDocRef = doc(db, 'users', user.uid);
     await setDoc(usersDocRef, { email: user.email, name:user.displayName, timestamp: dateString}, { merge: true } );
+  }
+
+  async function onAppleButtonPress() {
+    const appleAuthRequestResponse = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+    });
+  
+    if (!appleAuthRequestResponse.identityToken) {
+      throw new Error('Apple Sign-In failed - no identify token returned');
+    }
+    const { identityToken, nonce } = appleAuthRequestResponse;
+    const appleCredential = AppleAuthProvider.credential(identityToken, nonce);
+    return appleSignInWithCredential(getAuth(), appleCredential);
   }
 
   React.useEffect(() => {
@@ -54,6 +71,22 @@ const SignIn = () => {
             <Text className="text-[#8a92eb]">Win tournaments</Text>
           </Text>
         </View>
+
+        <TouchableOpacity 
+            className="flex-row items-center justify-center bg-black p-4 rounded-xl mb-4 shadow-lg border-1 border-[#8a92eb]"
+            onPress={() => onAppleButtonPress().then(() => console.log('Apple sign-in complete!'))}
+          >
+            <Image
+              source={icons.apple}
+              resizeMode="contain"
+              tintColor="white"
+              className='w-10 h-10 mb-0.5 p-1.5'
+            />
+            <Text className="text-white font-gBook text-xl ml-2">
+              Continue with
+            </Text>
+            <Text className='text-white font-gBold text-2xl ml-2'>Apple</Text>
+          </TouchableOpacity>
 
         <TouchableOpacity 
           onPress={() => promptAsync()} 

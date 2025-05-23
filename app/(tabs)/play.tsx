@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions } from 'react-native'
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions, TouchableHighlight, ViewComponent, useWindowDimensions } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import FocusedTextAnimator from '../components/TextAnimator'
@@ -8,6 +8,7 @@ import { db } from '../../firebaseConfig'
 import { doc, setDoc, collection, updateDoc, increment, getDoc } from 'firebase/firestore'
 import { UserContext, BuzzCircleContext, QuestionContext, SettingsContext, PointsContext } from '../context';
 import SettingsModal from '../components/SettingsModal'
+import CustomButton from '../components/CustomButton'
 
 const QuestionItem = React.memo(({
   item,
@@ -74,6 +75,8 @@ const Play = () => {
 
   const [paused, setPaused] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [askModalVisible, setAskModalVisible] = React.useState(false);
+  const [skipModal, setSkipModal] = React.useState(false)
   const [height, setHeight] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [questions, setQuestions] = React.useState<questions[]>([]);
@@ -159,6 +162,7 @@ const Play = () => {
       duration: 200,
       useNativeDriver: true,
     }).start(() => {
+      setPaused(false)
       setShowStart(false);
       setSeen(1)
     });
@@ -225,6 +229,12 @@ const Play = () => {
       console.log(error);
     }
   }, [user]);
+
+  React.useEffect(()=>{
+    if(showStart){
+      shiftValue.setValue(progressBarOffset);
+    }
+  },[])
 
   const onBuzz = React.useCallback(() => {
     if (!showStart && !showAnswer) {
@@ -337,6 +347,17 @@ const Play = () => {
       setShowAnswer(false)
     }
   }, [reset])
+
+  React.useEffect(()=>{
+    if(showStart){
+      setAnsweredCount(0);
+      setShowAnswer(false);
+      setAnswered([false, false])
+      setViewedIndices([false, false])
+      setCorrect([false, false])
+      setSeen(0)
+    }
+  },[])
 
   React.useEffect(()=>{
     if(showStart){
@@ -505,39 +526,85 @@ const Play = () => {
     }
   };
 
+  const skipQuestion = () => {
+    if(viewedIndices[currentPage]==true){
+      setSkipModal(true);
+    }
+    if(!showStart){
+      setShowAnswer(true)
+      shiftValue.setValue(0);
+      setViewedIndices(prev => {
+        const newViewed = [...prev];
+        newViewed[currentPage] = true;
+        return newViewed;
+      })
+    }
+  }
+
+  const scaleFont = (baseSize: number, screenWidth: number) => {
+    const baseScreenWidth = 460; // iPhone 16 width (as a reference)
+    return (screenWidth / baseScreenWidth) * baseSize;
+  };
+  const { width } = useWindowDimensions();
+  const lineHeight = scaleFont(20, width); // base line height on iPhone 16 pro
+  const fontSize = scaleFont(14, width); // base size 14px on iPhone 16 pro
 
   return (
     <SafeAreaView className='bg-background flex-1'>
       {/* Header */}
       <View className='flex-row justify-between items-center p-2 pl-5'>
         <Text className='text-tertiary text-3xl font-gBold'>BowlBuddy</Text>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}>
-          <SettingsModal
-            difficulties={difficulties}
-            setDifficulties={setDifficulties}
-            categories={categories}
-            setCategories={setCategories}
-            setModalVisible={setModalVisible}
-            enableTimer={enableTimer}
-            setEnableTimer={setEnableTimer}
-            allowRebuzz={allowRebuzz}
-            setAllowRebuzz={setAllowRebuzz}
-            onSpeedChange={(val) => setReadingSpeed(val)}
-            setReset={setReset}
-            disableReader={disableReader}
-            setDisableReader={setDisableReader}
-          />
-        </Modal>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image source={icons.settings} className='w-14 h-14 p-2' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
-        </TouchableOpacity>
+        <View className='flex-row items-end'>
 
+          <Modal animationType="slide" transparent={true} visible={askModalVisible}>
+            <View className='flex-1 justify-center p-4'>
+              <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+                <Text className='text-l text-secondary font-gBold text-center shadow-md shadow-black'>
+                  Scroll to see the next question!
+                </Text>
+                <Text className='text-xl text-tertiary font-gBook text-center mt-8'>
+                  Contact the developer at:
+                </Text>
+                <Text className='text-xl text-tertiary font-gBold text-center mt-2 p-2 bg-primary rounded-lg'>
+                  ncdev1919@gmail.com
+                </Text>
+                <TouchableOpacity>
+                  <CustomButton title='Close' handlePress={() => setAskModalVisible(false)} containerStyles='mt-5' />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          <TouchableOpacity onPress={() => setAskModalVisible(true)}>
+            <Image source={icons.conversation} className='w-14 h-14 p-3' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
+          </TouchableOpacity>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}>
+            <SettingsModal
+              difficulties={difficulties}
+              setDifficulties={setDifficulties}
+              categories={categories}
+              setCategories={setCategories}
+              setModalVisible={setModalVisible}
+              enableTimer={enableTimer}
+              setEnableTimer={setEnableTimer}
+              allowRebuzz={allowRebuzz}
+              setAllowRebuzz={setAllowRebuzz}
+              onSpeedChange={(val) => setReadingSpeed(val)}
+              setReset={setReset}
+              disableReader={disableReader}
+              setDisableReader={setDisableReader}
+            />
+          </Modal>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Image source={icons.settings} className='w-14 h-14 p-2' style={{ tintColor: '#cccfff' }} resizeMode='contain' />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Border */}
@@ -556,9 +623,9 @@ const Play = () => {
         </View>
       </View>
       {/* Answer and Timer Bar */}
-      <View className="flex-shrink mx-4 mb-3 mt-2.5" >
+      <View className="flex-shrink mx-4 mb-3 mt-2.5">
         <ScrollView horizontal={true} className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
-          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
+          <Text className='p-2 text-tertiary font-gBold mx-1 justify-center' style={{fontSize,lineHeight}}>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
         </ScrollView>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
@@ -619,25 +686,47 @@ const Play = () => {
       {/* Buttons */}
       <View className='flex-row justify-between'>
         {/* Pause Icon */}
-        <TouchableOpacity className="shadow-md flex-[0.5] mx-3 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={playPauseToggle}>
-          <Image source={paused ? icons.play2 : icons.pause2} className="w-12 h-12" tintColor={"#cccfff"} resizeMode="contain" />
+        <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-[15px] justify-center items-center" onPress={playPauseToggle}>
+          <Image source={paused ? icons.play2 : icons.pause2} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
         </TouchableOpacity>
         {/* Buzz Screen Modal */}
-        <></>
         {/* Buzz! */}
         {/* I NEED TO CHANGE THE CONDITION FOR BUZZ BEING AVAILABLE */}
         {/* COULD MAKE IT SO THAT ITS SLIGHTLY TRANSPARENT BEFORE PRESSING START BUTTON */}
         <TouchableOpacity
-          className={`shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-full justify-center items-center ${(showStart || showAnswer) ? 'opacity-50' : ''}`}
+          className={`shadow-md border-2 border-red-500 flex-grow mx-2 mb-5 bg-primary py-4 rounded-[15px] justify-center items-center ${(showStart || showAnswer) ? 'opacity-50' : ''}`}
           onPress={onBuzz}
           disabled={showStart || showAnswer}
         >
           <Text className="text-2xl font-gBlack text-red-500">Buzz!</Text>
         </TouchableOpacity>
-        {/* Saved icon */}
-        <TouchableOpacity className="flex-[0.5] shadow-md mx-4 mb-5 bg-primary py-4 rounded-full justify-center items-center" onPress={() => handleSave(questions[currentPage])}>
-          <Image source={icons.save} className="w-10 h-10" tintColor={"#cccfff"} resizeMode="contain" />
-        </TouchableOpacity>
+
+        <Modal animationType="slide" transparent={true} visible={skipModal}>
+            <View className='flex-1 justify-center p-4'>
+              <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+                <Text className='text-l text-tertiary font-gBook text-center mb-4'>
+                  This button ends the question in the middle!
+                </Text>
+                <Text className='text-xl text-tertiary font-gBold text-center mt-2 p-2 bg-primary rounded-lg'>
+                  Scroll to see the next question!
+                </Text>
+                <TouchableOpacity>
+                  <CustomButton title='Close' handlePress={() => setSkipModal(false)} containerStyles='mt-5' />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        {/* Saved icon */}      
+        <View className="flex-[0.5] mx-3 mb-3 pr-1" >
+          <TouchableOpacity className='flex-[0.5] bg-primary shadow-md w-full h-5 rounded-[10px] mb-2 justify-center items-center' onPress={() => handleSave(questions[currentPage])}>
+            <Image source={icons.save} className="w-5 h-5" tintColor={"#cccfff"} resizeMode="contain" />
+          </TouchableOpacity>
+
+          <TouchableOpacity className='flex-[0.5] bg-primary shadow-md w-full  h-5 rounded-[10px] mb-2 justify-center items-center' onPress={skipQuestion}>
+            <Image source={icons.next} className="w-8 h-8" tintColor={"#cccfff"} resizeMode="contain" />
+          </TouchableOpacity>
+
+        </View>
       </View>
     </SafeAreaView>
   )

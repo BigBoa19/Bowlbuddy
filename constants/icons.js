@@ -21,6 +21,8 @@ import x from "../assets/icons/x-circle-icon.png"
 import edit from "../assets/icons/pencil.png"
 import fire from "../assets/icons/fire.png"
 import bolder_eye from "../assets/icons/bolder_eye.png"
+import conversation from "../assets/icons/conversation.png"
+import apple from "../assets/icons/apple-logo.png"
 
 export default {
   play,
@@ -46,4 +48,6 @@ export default {
   edit,
   fire,
   bolder_eye,
+  conversation,
+  apple,
 };

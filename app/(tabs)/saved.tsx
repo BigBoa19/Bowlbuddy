@@ -1,5 +1,5 @@
 import { View, Text, SafeAreaView, FlatList, Image, TouchableOpacity, Modal, Dimensions } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import icons from '@/constants/icons';
 import FormField from '../components/FormField';
 import { questions } from '../functions/fetchDB';
@@ -18,7 +18,7 @@ import Animated, {
 
 const { width } = Dimensions.get('window');
 
-const Item = React.memo(({props, show, setShow}:any) => {
+const Item = React.memo(({props, isVisible, onOpen, onClose}:any) => {
   // Create a shared value for the animation
   const translateX = useSharedValue(width);
   
@@ -30,7 +30,7 @@ const Item = React.memo(({props, show, setShow}:any) => {
   });
 
   React.useEffect(() => {
-    if (show) {
+    if (isVisible) {
       // Animate in from right
       translateX.value = withTiming(0, {
         duration: 300,
@@ -43,7 +43,7 @@ const Item = React.memo(({props, show, setShow}:any) => {
         easing: Easing.in(Easing.cubic)
       });
     }
-  }, [show]);
+  }, [isVisible]);
 
   const handleClose = () => {
     // Start the slide out animation
@@ -52,20 +52,18 @@ const Item = React.memo(({props, show, setShow}:any) => {
       easing: Easing.in(Easing.cubic)
     }, () => {
       // This callback runs after animation completes
-      runOnJS(setShow)(false);
+      runOnJS(onClose)();
     });
   };
 
   return (
     <TouchableOpacity
-      onPress={() => {
-        setShow(true);
-      }}
+      onPress={onOpen}
     >
       <Modal
         animationType="none"
         transparent={true}
-        visible={show}
+        visible={isVisible}
         onRequestClose={handleClose}
       >
         <View className="flex-1 bg-black/50">
@@ -111,7 +109,7 @@ const Saved = () => {
   const { user } = React.useContext(UserContext);
   const [questions, setQuestions] = React.useState<any[]>([]);
   const [searchQuery, setQuery] = React.useState('');
-  const [show, setShow] = React.useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (!user?.uid) {
@@ -133,7 +131,14 @@ const Saved = () => {
 
   const filterData = (item: questions) => {
     if (item.answer_sanitized.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return <Item {...{props:item,show:show,setShow:setShow}} />;
+      return (
+        <Item 
+          props={item} 
+          isVisible={selectedQuestionId === item._id}
+          onOpen={() => setSelectedQuestionId(item._id)}
+          onClose={() => setSelectedQuestionId(null)}
+        />
+      );
     }
     return null;
   };
@@ -146,7 +151,7 @@ const Saved = () => {
           <Text className="text-tertiary text-3xl font-gBold">Saved</Text>
           <Image
             source={icons.play2}
-            className="w-14 h-14 p-2"
+            className="w-14 h-14 p-2 opacity-0"
             style={{ tintColor: '#cccfff' }}
             resizeMode="contain"
           />
