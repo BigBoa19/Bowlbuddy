@@ -106,7 +106,8 @@ const Item = React.memo(({props, isVisible, onOpen, onClose}:any) => {
 });
 
 const Saved = () => {
-  const { user } = React.useContext(UserContext);
+  const { userGoogle, userApple } = React.useContext(UserContext);
+  const user = userGoogle || userApple;
   const [questions, setQuestions] = React.useState<any[]>([]);
   const [searchQuery, setQuery] = React.useState('');
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);

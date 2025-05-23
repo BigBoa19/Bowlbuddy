@@ -65,7 +65,8 @@ const QuestionItem = React.memo(({
 const Play = () => {
   const { isAnimating, setAnimating } = React.useContext(BuzzCircleContext);
   const { enableTimer, setEnableTimer, allowRebuzz, setAllowRebuzz } = React.useContext(SettingsContext);
-  const { user } = React.useContext(UserContext);
+  const { userGoogle, userApple } = React.useContext(UserContext);
+  const user = userGoogle || userApple;
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const { points } = React.useContext(PointsContext);
 

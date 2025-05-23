@@ -1,9 +1,11 @@
 import { createContext } from 'react';
 import { User } from 'firebase/auth';
 import { questions } from './functions/fetchDB'
+import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 
 type UserContextType = {
-    user: User | null;
+    userGoogle: User | null;
+    userApple: FirebaseAuthTypes.User | null;
 };
 
 type QuestionType = {
@@ -33,7 +35,11 @@ type STTContextType = {
 }
   
 
-export const UserContext = createContext<UserContextType>({user: null });
+export const UserContext = createContext<UserContextType>({
+    userGoogle: null,
+    userApple: null
+ });
+ 
 export const BuzzCircleContext = createContext<BuzzCircleContextType>({ isAnimating: false, setAnimating: () => {} });
 export const QuestionContext = createContext<QuestionType>({
     currentQuestion: {_id:'',

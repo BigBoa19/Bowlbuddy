@@ -66,7 +66,7 @@ export default function RootLayout() {
       }}>
       <QuestionContext.Provider value={{currentQuestion:currentQuestion, setCurrentQuestion:setCurrentQuestion}}>
       <BuzzCircleContext.Provider value={{ isAnimating:isAnimating, setAnimating:setIsAnimating }}>
-      <UserContext.Provider value={{ user: userData.user }} >
+      <UserContext.Provider value={{ userGoogle: userData.userGoogle, userApple: userData.userApple }} >
       <STTContext.Provider value={{startSTT:startSTT, setStartSTT:setStartSTT}}>
       
       {/* Providers */}

@@ -3,10 +3,12 @@ import React from 'react'
 import icons from '@/constants/icons'
 import { auth, db } from '@/firebaseConfig'
 import { signOut, updateProfile } from 'firebase/auth'
+import { getAuth, signOut as firebaseSignOut, updateProfile as appleUpdateProfile } from '@react-native-firebase/auth';
 import { useRouter } from 'expo-router'
 import { UserContext } from '../context';
 import { doc, updateDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
+
 interface EditModalProps {
   visible: boolean;
   onClose: () => void;
@@ -24,7 +26,7 @@ const EditModal: React.FC<EditModalProps> = ({
   value, 
   onChangeText, 
   onSave, 
-  multiline = false 
+  multiline = false
 }) => (
   <Modal
     animationType="slide"
@@ -41,10 +43,11 @@ const EditModal: React.FC<EditModalProps> = ({
           onChangeText={onChangeText}
           placeholder={`Enter ${title.toLowerCase()}`}
           placeholderTextColor="#75726f"
-          maxLength={multiline ? undefined : 10}
+          maxLength={multiline ? undefined : 20}
           multiline={multiline}
           textAlignVertical={multiline ? "top" : "center"}
           numberOfLines={multiline ? 4 : 1}
+          autoCorrect={false}
         />
         <View className="flex-row justify-end space-x-4">
           <TouchableOpacity 
@@ -66,21 +69,24 @@ const EditModal: React.FC<EditModalProps> = ({
 );
 
 const Profile = () => {
-  const { user } = React.useContext(UserContext);
+  const { userGoogle, userApple } = React.useContext(UserContext);
+  const user = userGoogle || userApple;
   const router = useRouter();
   const [isNameModalVisible, setIsNameModalVisible] = React.useState(false);
   const [isBioModalVisible, setIsBioModalVisible] = React.useState(false);
   const [newName, setNewName] = React.useState('');
   const [newBio, setNewBio] = React.useState('');
   const [currentBio, setCurrentBio] = React.useState('');
+  const [displayName, setDisplayName] = React.useState(user?.displayName || '');
   const [totalScore, setTotalScore] = React.useState(0);
   const [totalCorrect, setTotalCorrect] = React.useState(0);
   const [totalSeen, setTotalSeen] = React.useState(0);
+  const [deleteModal, setDeleteModal] = React.useState(false);
 
   React.useEffect(() => {
     const fetchBio = async () => {
       if (!user?.uid) return;
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, 'users', user?.uid || '');
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
         setCurrentBio(userDoc.data().bio || '');
@@ -92,7 +98,7 @@ const Profile = () => {
   React.useEffect(() => {
     if (!user?.uid) return;
 
-    const userDocRef = doc(db, 'users', user.uid);
+    const userDocRef = doc(db, 'users', user?.uid || '');
     
     const unsubscribe = onSnapshot(userDocRef, (doc) => {
       if (doc.exists()) {
@@ -106,6 +112,10 @@ const Profile = () => {
     return () => unsubscribe();
   }, [user]);
 
+  React.useEffect(() => {
+    setDisplayName(user?.displayName || '');
+  }, [user]);
+
   const SignOut = async () => {
     Alert.alert(
       "Logout",
@@ -116,7 +126,8 @@ const Profile = () => {
           text: "Logout", 
           onPress: async () => {
             try {
-              await signOut(auth);
+              if(userGoogle) await signOut(auth);
+              if(userApple) await firebaseSignOut(getAuth());
               router.replace("/");
             } catch (error) {
               console.error('Logout error:', error);
@@ -128,12 +139,45 @@ const Profile = () => {
     );
   }
 
+  const DeleteUser = async () => {
+    Alert.alert(
+      "Delete profile?",
+      "Are you sure? All saved data will be lost.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          onPress: async () => {
+            try {
+              if(userApple) await userApple.delete()
+              if(userGoogle) await userGoogle.delete()
+              await updateDoc(doc(db, 'users', user?.uid || ''), { deleted: true });
+              router.replace("/");
+            } catch (error) {
+              console.log(error)
+              Alert.alert(
+                "Deletion Error",
+                "Please log out and log back in to delete your account.",
+                [{ text: "Confirm", style: "cancel" },]
+              )
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  }
+
   const handleNameChange = async () => {
-    if (!user || !newName.trim()) return;
+    if (!user?.uid || !newName.trim()) return;
     
     try {
-      await updateProfile(user, { displayName: newName.trim() });
-      await updateDoc(doc(db, 'users', user.uid), { name: newName.trim() });
+      if(userGoogle) await updateProfile(userGoogle, { displayName: newName.trim() });
+      if(userApple) await appleUpdateProfile(userApple, { displayName: newName.trim() });
+      await updateDoc(doc(db, 'users', user?.uid || ''), { name: newName.trim() });
+      
+      // Update local state
+      setDisplayName(newName.trim());
       
       Toast.show({
         type: ALERT_TYPE.SUCCESS,
@@ -151,10 +195,10 @@ const Profile = () => {
   }
 
   const handleBioChange = async () => {
-    if (!user) return;
+    if (!user?.uid) return;
     
     try {
-      await updateDoc(doc(db, 'users', user.uid), { bio: newBio.trim() });
+      await updateDoc(doc(db, 'users', user?.uid || ''), { bio: newBio.trim() });
       setCurrentBio(newBio.trim());
       
       Toast.show({
@@ -183,6 +227,29 @@ const Profile = () => {
     <SafeAreaView className='bg-background flex-1'>
       <View className='flex-row justify-between items-center p-2 pt-[16px] pl-5'>
         <Text className='text-tertiary text-3xl font-gBold'>Profile</Text>
+        <Modal animationType="slide" transparent={true} visible={deleteModal}>
+          <View className='flex-1 justify-center p-4'>
+            <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+              <Text className='text-xl text-tertiary font-gBold text-center'>
+                Are you sure you want to delete your profile?
+              </Text>
+              <Text className='text-lg text-secondary font-gBook text-center shadow-md shadow-black mt-4'>
+                All saved data will be lost.
+              </Text>
+              <View className='flex-row mt-8'>
+                <TouchableOpacity className='bg-primary rounded-xl p-3 w-16 mr-6' onPress={()=>{setDeleteModal(false)}}>
+                  <Text className='text-secondary text-center text-lg font-gBold'>No</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className='bg-primary rounded-xl p-3 w-16 ml-6' onPress={()=>{setDeleteModal(false);DeleteUser()}}>
+                  <Text className='text-red-500 text-center text-lg font-gBold'>Yes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <TouchableOpacity onPress={()=>{setDeleteModal(true)}}>
+          <Image source={icons.trash} className='w-7 h-8 p-0.5 shadow-lg mr-2' style={{tintColor: 'red'}} resizeMode='contain' />
+        </TouchableOpacity>
       </View>
 
       <View className="h-[1px] bg-tertiary mt-[8px]" />
@@ -192,11 +259,11 @@ const Profile = () => {
           <View className='flex-row items-center'>
             <View className='flex-row w-60 items-center'>
               <Text className='text-tertiary text-2xl font-gBold p-4' numberOfLines={1} adjustsFontSizeToFit={true}>
-                {user?.displayName}
+                {displayName}
               </Text>
               <TouchableOpacity onPress={() => {
-                setNewName(user?.displayName || '');
                 setIsNameModalVisible(true);
+                setNewName(displayName);
               }}>
                 <Image source={icons.edit} className='w-14 h-14 p-4 shadow-lg' style={{tintColor: '#8a92eb'}} resizeMode='contain' />
               </TouchableOpacity>
