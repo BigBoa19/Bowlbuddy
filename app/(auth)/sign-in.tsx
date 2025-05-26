@@ -7,6 +7,7 @@ import { auth, db } from "../../firebaseConfig"
 import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
 import * as Google from "expo-auth-session/providers/google"
 import { router } from "expo-router"
+import * as AppleAuthentication from "expo-apple-authentication"
 
 
 const SignIn = () => {
@@ -75,6 +76,28 @@ const SignIn = () => {
           <Text className='text-[#34a853] font-gBold text-2xl'>l</Text>
           <Text className='text-[#ea4336] font-gBold text-2xl'>e</Text>
         </TouchableOpacity>
+        <AppleAuthentication.AppleAuthenticationButton
+        buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+        buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+        cornerRadius={5}
+        onPress={async () => {
+          try {
+            const credential = await AppleAuthentication.signInAsync({
+              requestedScopes: [
+                AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                AppleAuthentication.AppleAuthenticationScope.EMAIL,
+              ],
+            });
+            // signed in
+          } catch (e: any) {
+            if (e.code === 'ERR_REQUEST_CANCELED') {
+              // handle that the user canceled the sign-in flow
+            } else {
+              // handle other errors
+            }
+          }
+        }}
+      />
       </View>
     </SafeAreaView>
   )

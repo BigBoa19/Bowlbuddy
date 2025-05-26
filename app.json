@@ -10,6 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
+      "usesAppleSignIn": true,
       "bundleIdentifier": "R28YV52T9C.com.objectiveac.bowlbuddy",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "BowlBuddy does not directly access your photos, but this permission is required by a component in the app. Your photos will not be accessed or used without your explicit permission.",
@@ -30,6 +31,7 @@
     },
     "plugins": [
       "expo-router",
+      ["expo-apple-authentication"],
       [
         "expo-splash-screen",
         {
