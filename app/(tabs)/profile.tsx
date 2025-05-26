@@ -5,7 +5,7 @@ import { auth, db } from '@/firebaseConfig'
 import { signOut, updateProfile } from 'firebase/auth'
 import { useRouter } from 'expo-router'
 import { UserContext } from '../context';
-import { doc, updateDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 interface EditModalProps {
   visible: boolean;
@@ -77,6 +77,7 @@ const Profile = () => {
   const [totalScore, setTotalScore] = React.useState(0);
   const [totalCorrect, setTotalCorrect] = React.useState(0);
   const [totalSeen, setTotalSeen] = React.useState(0);
+  const [deleteModal, setDeleteModal] = React.useState(false);
 
   React.useEffect(() => {
     const fetchBio = async () => {
@@ -106,6 +107,35 @@ const Profile = () => {
 
     return () => unsubscribe();
   }, [user]);
+
+  const DeleteUser = async () => {
+    Alert.alert(
+      "Delete profile?",
+      "Are you sure? All saved data will be lost.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          onPress: async () => {
+            try {
+              await user?.delete()
+              const userDocRef = doc(db, 'users', user?.uid || '');
+              await deleteDoc(userDocRef);
+              router.replace("/");
+            } catch (error) {
+              console.log(error)
+              Alert.alert(
+                "Deletion Error",
+                "Please log out and log back in to delete your account.",
+                [{ text: "Confirm", style: "cancel" },]
+              )
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  }
 
   const SignOut = async () => {
     Alert.alert(
@@ -184,8 +214,30 @@ const Profile = () => {
     <SafeAreaView className='bg-background flex-1'>
       <View className='flex-row justify-between items-center p-2 pt-[16px] pl-5'>
         <Text className='text-tertiary text-3xl font-gBold'>Profile</Text>
+        <Modal animationType="slide" transparent={true} visible={deleteModal}>
+          <View className='flex-1 justify-center p-4'>
+            <View className="m-5 bg-background border-2 border-secondary rounded-lg p-9 items-center shadow-lg">
+              <Text className='text-xl text-tertiary font-gBold text-center'>
+                Are you sure you want to delete your profile?
+              </Text>
+              <Text className='text-lg text-secondary font-gBook text-center shadow-md shadow-black mt-4'>
+                All saved data will be lost.
+              </Text>
+              <View className='flex-row mt-8'>
+                <TouchableOpacity className='bg-primary rounded-xl p-3 w-16 mr-6' onPress={()=>{setDeleteModal(false)}}>
+                  <Text className='text-secondary text-center text-lg font-gBold'>No</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className='bg-primary rounded-xl p-3 w-16 ml-6' onPress={()=>{setDeleteModal(false);DeleteUser()}}>
+                  <Text className='text-red-500 text-center text-lg font-gBold'>Yes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <TouchableOpacity onPress={()=>{setDeleteModal(true)}}>
+          <Image source={icons.trash} className='w-7 h-8 p-0.5 shadow-lg mr-2' style={{tintColor: 'red'}} resizeMode='contain' />
+        </TouchableOpacity>
       </View>
-
       <View className="h-[1px] bg-tertiary mt-[8px]" />
       
       <View className='flex-1 p-4 mt-2'>

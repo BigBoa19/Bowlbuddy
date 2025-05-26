@@ -23,6 +23,7 @@ import fire from "../assets/icons/fire.png"
 import bolder_eye from "../assets/icons/bolder_eye.png"
 import question from "../assets/icons/question.png"
 import conversation from "../assets/icons/conversation.png"
+import apple from "../assets/icons/apple-logo.png"
 
 export default {
   play,
@@ -50,4 +51,5 @@ export default {
   bolder_eye,
   question,
   conversation,
+  apple,
 };

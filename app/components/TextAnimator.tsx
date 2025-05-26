@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   runOnJS,
   useSharedValue,
@@ -24,10 +24,19 @@ const AnimatedWord = React.memo(({
     opacity: opacity.value,
   }), []);
 
+  const scaleFont = (baseSize: number, screenWidth: number) => {
+    const baseScreenWidth = 460; // iPhone 16 width (as a reference)
+    return (screenWidth / baseScreenWidth) * baseSize;
+  };
+  const { width } = useWindowDimensions();
+  const lineHeight = scaleFont(20, width); // base line height on iPhone 16 pro
+  const fontSize = scaleFont(14, width); // base size 14px on iPhone 16 pro
+
+
   return (
     <Animated.Text 
       className="text-sm text-secondary text-left font-gBook"
-      style={[{ marginRight: 5 }, animatedStyle]}
+      style={[{ marginRight: 5, fontSize, lineHeight }, animatedStyle]}
     >
       {word}
     </Animated.Text>

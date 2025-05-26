@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions, TouchableHighlight, ViewComponent } from 'react-native'
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Modal, FlatList, Button, Animated, Dimensions, TouchableHighlight, ViewComponent, useWindowDimensions } from 'react-native'
 import React from 'react'
 import icons from '@/constants/icons'
 import FocusedTextAnimator from '../components/TextAnimator'
@@ -68,7 +68,6 @@ const Play = () => {
   const { user } = React.useContext(UserContext);
   const { setCurrentQuestion } = React.useContext(QuestionContext);
   const { points } = React.useContext(PointsContext);
-
   // Get screen width and calculate progress bar offset
   const screenWidth = Dimensions.get('window').width;
   const progressBarOffset = -(screenWidth - 20);
@@ -229,6 +228,12 @@ const Play = () => {
       console.log(error);
     }
   }, [user]);
+
+  React.useEffect(()=>{
+    if(showStart){
+      shiftValue.setValue(progressBarOffset);
+    }
+  },[])
 
   const onBuzz = React.useCallback(() => {
     if (!showStart && !showAnswer) {
@@ -535,6 +540,14 @@ const Play = () => {
     }
   }
 
+  const scaleFont = (baseSize: number, screenWidth: number) => {
+    const baseScreenWidth = 460; // iPhone 16 width (as a reference)
+    return (screenWidth / baseScreenWidth) * baseSize;
+  };
+  const { width } = useWindowDimensions();
+  const lineHeight = scaleFont(20, width); // base line height on iPhone 16 pro
+  const fontSize = scaleFont(14, width); // base size 14px on iPhone 16 pro
+
   return (
     <SafeAreaView className='bg-background flex-1'>
       {/* Header */}
@@ -611,7 +624,7 @@ const Play = () => {
       {/* Answer and Timer Bar */}
       <View className="flex-shrink mx-4 mb-3 mt-2.5">
         <ScrollView horizontal={true} className='flex-shrink bg-primary border-secondary border-2 rounded-lg h-10 shadow-md'>
-          <Text className='p-2 text-tertiary font-gBold text-sm mx-1'>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
+          <Text className='p-2 text-tertiary font-gBold mx-1 justify-center' style={{fontSize,lineHeight}}>{showAnswer ? questions[currentPage]?.answer_sanitized : ' '}</Text>
         </ScrollView>
         <View className='h-1 mt-1 bg-gray-600 overflow-hidden opacity-90 rounded-lg'>
           <Animated.View
